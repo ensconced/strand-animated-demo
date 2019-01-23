@@ -18,12 +18,14 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
 }
 
 body {
-    display: grid;
-    grid-template-rows: 850px;
-    grid-template-columns: 900px;
-    grid-template-areas:
-      "drawing"
-      "footer";
+	color: #eee;
+  background-color: #aaa;
+  display: grid;
+  grid-template-rows: 850px;
+  grid-template-columns: 900px;
+  grid-template-areas:
+    "drawing"
+    "footer";
 }
 
 /*##########*/

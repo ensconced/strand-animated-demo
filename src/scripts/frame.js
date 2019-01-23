@@ -5,58 +5,142 @@ import Mouse from './mouse.js';
 import surface from './main.js';
 
 export default function Frame(options) {
+  this.options = options;
   this.nodes = [];
   this.adjacencyList = [];
-  this.lines = [];
   var initialBox = options.initialBox;
   var finalBox = options.finalBox;
   // if drawn as grid rather than individual nodes and lines...
   if (initialBox && finalBox) {
-    var leftmost = Math.min(initialBox[0], finalBox[0]);
-    var topmost = Math.min(initialBox[1], finalBox[1]);
-    var rightmost = Math.max(initialBox[0], finalBox[0]);
-    var bottommost = Math.max(initialBox[1], finalBox[1]);
+    this.leftmost = Math.min(initialBox[0], finalBox[0]);
+    this.topmost = Math.min(initialBox[1], finalBox[1]);
+    this.rightmost = Math.max(initialBox[0], finalBox[0]);
+    this.bottommost = Math.max(initialBox[1], finalBox[1]);
   }
 
+  // 'super'
   Grid.call(this, {
     drawing: options.drawing,
-    startCol: leftmost,
-    startRow: topmost,
-    cols: rightmost - leftmost + 1,
-    rows: bottommost - topmost + 1,
+    startCol: this.leftmost,
+    startRow: this.topmost,
+    cols: this.rightmost - this.leftmost + 1,
+    rows: this.bottommost - this.topmost + 1,
     style: config.frame,
   });
 
-  this.showCrossingPoints = function() {
+  this.setNodes();
+  this.setLines();
+}
+
+// frames inherit from grids
+Frame.prototype = Object.assign(Object.create(Grid.prototype), {
+  constructor: Frame,
+  nodeIndex(node) {
+    for (var i = 0; i < this.options.drawing.frame.nodes.length; i++) {
+      if (this.options.drawing.frame.nodes[i].sameNode(node)) {
+        return i;
+      }
+    }
+  },
+  lineIsBetween(line, nodeA, nodeB) {
+    const isForwards = line.startNode.sameNode(nodeA) && line.endNode.sameNode(nodeB);
+    const isReversed = line.startNode.sameNode(nodeB) && line.endNode.sameNode(nodeA);
+    return isForwards || isReversed;
+  },
+  lineExistsBetween(nodeA, nodeB) {
+    const allLines = this.options.drawing.frame.lines;
+    return !!allLines.find(line => {
+      return this.lineIsBetween(line, nodeA, nodeB);
+    });
+  },
+  makeMouseUpHandler(node) {
+    return function() {
+      this.options.drawing.graphArea.removeEventListener('mousemove', this.moveListener);
+      this.userLine.remove();
+      if (this.hoveredNode) {
+        if (!this.lineExistsBetween(node, this.hoveredNode)) {
+          var startNodeIdx = this.nodeIndex.call(this, node);
+          var endNodeIdx = this.nodeIndex.call(this, this.hoveredNode);
+          this.options.drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
+          this.options.drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
+        }
+      }
+      if (this.options.drawing.knot) this.options.drawing.knot.remove();
+      this.options.drawing.frame.remove();
+      this.options.drawing.frame.draw();
+      this.options.drawing.drawKnot();
+      document.removeEventListener('mouseup', this.upListener);
+      this.options.drawing.frame.startLineDrawingMode();
+    };
+  },
+  startLineDrawingMode() {
+    // this function constructs listeners for nodes
+    function hoverIn(node) {
+      return function() {
+        this.hoveredNode = node;
+      };
+    }
+
+    function hoverOut() {
+      return function() {
+        this.hoveredNode = undefined;
+      };
+    }
+
+    function onDown(node) {
+      function onMove(node) {
+        return function(event) {
+          this.userLine && this.userLine.remove();
+          this.userLine = surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
+          this.userLine.attr(config.frame);
+        };
+      }
+
+      return function() {
+        this.moveListener = onMove(node).bind(this);
+        this.options.drawing.graphArea.addEventListener('mousemove', this.moveListener);
+        this.upListener = this.makeMouseUpHandler(node).bind(this);
+        document.addEventListener('mouseup', this.upListener);
+      };
+    }
+
+    // add listeners to all nodes for clicks
+    this.nodes.forEach(node => {
+      this.downListener = onDown(node).bind(this);
+      node.snapObject.mousedown(this.downListener);
+      node.snapObject.hover(hoverIn(node).bind(this), hoverOut(node).bind(this));
+    });
+    // for each node...
+    // on click, set move listener
+    // on move, delete any extant useerLine, make new line and draw from start node to current point, and draw the line
+    // on mouseup, if on another node, then create the line to centerpoint of that node
+    // if not on another node, then delete the userLine
+  },
+  showCrossingPoints() {
     for (var line of this.lines) {
       line.drawCrossingPoints();
     }
-  };
-
-  this.setNodes = function() {
-    for (var x = leftmost; x <= rightmost + 1; x++) {
-      for (var y = topmost; y <= bottommost + 1; y++) {
+  },
+  setNodes() {
+    for (var x = this.leftmost; x <= this.rightmost + 1; x++) {
+      for (var y = this.topmost; y <= this.bottommost + 1; y++) {
         this.nodes.push(
           new Node({
             x: x,
             y: y,
             gridSystem: 'square',
-            drawing: options.drawing,
+            drawing: this.options.drawing,
           })
         );
       }
     }
-  };
-
-  this.setNodes();
-
-  this.showNodes = function() {
+  },
+  showNodes() {
     for (var node of this.nodes) {
       node.draw();
     }
-  };
-
-  this.setLines = function() {
+  },
+  setLines() {
     for (var firstNode of this.nodes) {
       this.adjacencyList.push([]);
       // push indices of adjacent this.nodes to this new subarray
@@ -72,9 +156,8 @@ export default function Frame(options) {
         }
       }
     }
-  };
-
-  this.drawLines = function() {
+  },
+  drawLines() {
     for (var i = 0; i < this.nodes.length; i++) {
       for (var j of this.adjacencyList[i]) {
         if (i < j) {
@@ -84,28 +167,23 @@ export default function Frame(options) {
               startNode: this.nodes[i],
               endNode: this.nodes[j],
               style: config.frame,
-              drawing: options.drawing,
+              drawing: this.options.drawing,
             })
           );
         }
       }
     }
-  };
-
-  this.linesOutFrom = function(node) {
+  },
+  linesOutFrom(node) {
     return this.lines.filter(function(line) {
       return line.startNode.sameNode(node) || line.endNode.sameNode(node);
     });
-  };
-
-  this.setLines();
-
-  this.draw = function() {
+  },
+  draw() {
     this.drawLines();
     this.showNodes();
-  };
-
-  this.addNode = function(event) {
+  },
+  addNode(event) {
     var x;
     var y;
     [x, y] = Mouse.closestGraphCoords(event);
@@ -124,101 +202,15 @@ export default function Frame(options) {
           x: x,
           y: y,
           gridSystem: 'square',
-          drawing: options.drawing,
+          drawing: this.options.drawing,
         })
       );
       this.adjacencyList.push([]);
       this.remove();
       this.draw();
     }
-  };
-
-  this.userLine = function () {
-    function nodeIndex(node) {
-      for (var i = 0; i < options.drawing.frame.nodes.length; i++) {
-        if (options.drawing.frame.nodes[i].sameNode(node)) {
-          return i;
-        }
-      }
-    }
-
-    var userLine;
-    var hoveredNode;
-    var downListener;
-    var moveListener;
-    var upListener;
-
-    // this function constructs listeners for nodes
-    function onUp(node) {
-      return function() {
-        options.drawing.graphArea.removeEventListener('mousemove', moveListener);
-        userLine.remove();
-        if (hoveredNode) {
-          var lineAlreadyExists = options.drawing.frame.lines.find(function(line) {
-            var existsForward = line.startNode.sameNode(node) && line.endNode.sameNode(hoveredNode);
-            var existsReverse = line.endNode.sameNode(node) && line.startNode.sameNode(hoveredNode);
-            return existsForward || existsReverse;
-          });
-          if (!lineAlreadyExists) {
-            var startNodeIdx = nodeIndex(node);
-            var endNodeIdx = nodeIndex(hoveredNode);
-            options.drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
-            options.drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
-          }
-        }
-        if (options.drawing.knot) options.drawing.knot.remove();
-        options.drawing.frame.remove();
-        options.drawing.frame.draw();
-        options.drawing.drawKnot();
-        document.removeEventListener('mouseup', upListener);
-        options.drawing.frame.userLine();
-      };
-    }
-
-    function hoverIn(node) {
-      return function() {
-        hoveredNode = node;
-      };
-    }
-
-    function hoverOut() {
-      return function() {
-        hoveredNode = undefined;
-      };
-    }
-
-    function onDown(node) {
-      function onMove(node) {
-        return function(event) {
-          userLine && userLine.remove();
-          userLine = surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
-          userLine.attr(config.frame);
-        };
-      }
-
-      return function() {
-        moveListener = onMove(node);
-        options.drawing.graphArea.addEventListener('mousemove', moveListener);
-        upListener = onUp(node);
-        document.addEventListener('mouseup', upListener);
-      };
-    }
-
-    // add listeners to all nodes for clicks
-    for (let node of this.nodes) {
-      downListener = onDown(node);
-      node.snapObject.mousedown(downListener);
-      node.snapObject.hover(hoverIn(node), hoverOut(node));
-    }
-    // for each node...
-    // on click, set move listener
-    // on move, delete any extant useerLine, make new line and draw from start node to current point, and draw the line
-    // on mouseup, if on another node, then create the line to centerpoint of that node
-    // if not on another node, then delete the userLine
-  };
-}
-
-Frame.prototype = Grid.prototype;
+  },
+});
 
 function Node(options) {
   if (options.gridSystem === 'square') {
@@ -233,17 +225,17 @@ function Node(options) {
     this.x = options.x;
     this.y = options.y;
   }
-
-  this.sameNode = function(otherNode) {
+}
+Node.prototype = {
+  constructor: Node,
+  sameNode(otherNode) {
     return this.x === otherNode.x && this.y === otherNode.y;
-  };
-
-  this.draw = function() {
+  },
+  draw() {
     this.snapObject = surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
     //this.HTMLobj = this.findHTMLobj();
-  };
-
-  this.remove = function() {
+  },
+  remove() {
     if (this.snapObject) this.snapObject.remove();
-  };
-}
+  },
+};

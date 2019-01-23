@@ -31,7 +31,7 @@ function makeDragHandler(node) {
     // so add listeners again
     makeAllNodesDraggable();
     // uncomment the line below to make freeform 10x as fun
-    // redrawKnot();
+    redrawKnot();
   };
 }
 function redrawKnot() {
@@ -44,10 +44,9 @@ function startFreeformMode() {
   makeAllNodesDraggable();
 }
 function addNode() {
-  if (!drawing.frame)
-    drawing.frame = new Frame({
-      drawing: drawing,
-    });
+  if (!drawing.frame) {
+    drawing.frame = new Frame({});
+  }
   drawing.frame.addNode(event);
 }
 function setFrameType() {
@@ -70,13 +69,13 @@ function startAddNodeMode() {
 }
 function startAddLineMode() {
   drawing.graphArea.removeEventListener('click', addNode);
-  drawing.frame.userLine();
+  drawing.frame.startLineDrawingMode();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('add-node').addEventListener('click', startAddNodeMode, false);
   document.getElementById('add-line').addEventListener('click', startAddLineMode, false);
-  document.getElementById('add-grid').addEventListener('click', drawing.addUserFrame.bind(drawing));
-  setFrameType();
+  document.getElementById('add-grid').addEventListener('click', drawing.addUserFrame.bind(drawing), false);
   document.getElementById('frame-type').addEventListener('click', setFrameType, false);
+  setFrameType();
 }, false);

@@ -2,6 +2,7 @@ import Grid from './grid.js';
 import config from './config.js';
 import Line from './line.js';
 import Mouse from './mouse.js';
+import surface from './main.js';
 
 export default function Frame(options) {
   this.nodes = [];
@@ -190,7 +191,7 @@ export default function Frame(options) {
       function onMove(node) {
         return function(event) {
           userLine && userLine.remove();
-          userLine = options.drawing.surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
+          userLine = surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
           userLine.attr(config.frame);
         };
       }
@@ -238,7 +239,7 @@ function Node(options) {
   };
 
   this.draw = function() {
-    this.snapObject = options.drawing.surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
+    this.snapObject = surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
     //this.HTMLobj = this.findHTMLobj();
   };
 

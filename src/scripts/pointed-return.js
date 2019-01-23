@@ -1,9 +1,9 @@
 import knotUtils from './knot-utils.js';
 import config from './config';
 import kldIntersections from 'kld-intersections';
+import surface from './main.js';
 
 export default function PointedReturn(options) {
-  var drawing = options.drawing;
   var pr = options.pr;
   var group = options.group;
 
@@ -31,7 +31,7 @@ export default function PointedReturn(options) {
     var outClipped = clippedOutboundPath(intersection, innerOutboundPolyline);
     var inClipped = clippedInboundPath(intersection, innerInboundPolyline);
     var points = outClipped.concat(inClipped).reduce(knotUtils.reducer, []);
-    var snp = drawing.surface.polyline(points);
+    var snp = surface.polyline(points);
     group.add(snp);
     knotUtils.format(snp);
   }
@@ -93,7 +93,7 @@ export default function PointedReturn(options) {
     outboundExtensions = outboundExtensions.concat(inboundExtensions);
     points = points.concat(outboundExtensions.concat(outerInboundPolyline));
     var pointList = points.reduce(knotUtils.reducer, []);
-    var snp = drawing.surface.polyline(pointList);
+    var snp = surface.polyline(pointList);
     group.add(snp);
     knotUtils.format(snp);
   }

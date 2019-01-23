@@ -64,4 +64,4 @@ Drawing.prototype = {
   },
 };
 
-export { Drawing };
+export default Drawing;

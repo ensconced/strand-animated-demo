@@ -1,4 +1,5 @@
 import config from './config.js';
+import surface from './main.js';
 
 export default function Line(options) {
   this.startNode = options.startNode;
@@ -18,7 +19,7 @@ export default function Line(options) {
 
   this.crossingPoint = new CrossingPoint(this.startX, this.startY, this.endX, this.endY, this);
 
-  this.snapObj = options.drawing.surface.line(this.startX, this.startY, this.endX, this.endY).attr(options.style);
+  this.snapObj = surface.line(this.startX, this.startY, this.endX, this.endY).attr(options.style);
 
   this.vector = function() {
     return [this.endX - this.startX, this.endY - this.startY];

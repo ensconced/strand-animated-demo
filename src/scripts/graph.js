@@ -3,9 +3,8 @@ import Grid from './grid.js';
 import Mouse from './mouse.js';
 import Line from './line.js';
 
-export default function Graph(drawing) {
+export default function Graph() {
   var options = {
-    drawing: drawing,
     startCol: 0,
     startRow: 0,
     cols: config.graphCols,
@@ -32,7 +31,6 @@ export default function Graph(drawing) {
           endX: endX,
           endY: endY,
           style: options.style,
-          drawing: options.drawing,
         })
       );
     }
@@ -55,7 +53,6 @@ export default function Graph(drawing) {
           endX: endX,
           endY: endY,
           style: options.style,
-          drawing: options.drawing,
         })
       );
     }

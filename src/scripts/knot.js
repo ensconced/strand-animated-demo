@@ -2,13 +2,14 @@ import knotUtils from './knot-utils.js';
 import Strand from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
+import surface from './main.js';
 
 export default function Knot(drawing) {
   var targetNode;
   var currentLine;
   var roundabout;
   var direction;
-  var group = drawing.surface.g();
+  var group = surface.g();
   var strands = [];
 
   this.drawing = drawing;
@@ -19,7 +20,7 @@ export default function Knot(drawing) {
 
   function drawOutline(outline) {
     var points = outline.reduce(knotUtils.reducer, []);
-    var snp = drawing.surface.polyline(points);
+    var snp = surface.polyline(points);
     group.add(snp);
     knotUtils.format(snp);
   }
@@ -203,7 +204,6 @@ export default function Knot(drawing) {
         } else if (cpORpr.pr) {
           // here we draw the PRs
           var pr = new PointedReturn({
-            drawing,
             pr: cpORpr,
             group: group,
             middleOutbound: strand.points[knotUtils.previousCyclicalIdx(strand, i)].outbound,

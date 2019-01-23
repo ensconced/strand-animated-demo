@@ -4,27 +4,15 @@ function Grid(options) {
 }
 
 Grid.prototype = {
-  constructor: Object,
-
-  // remove frame (by removing all of its lines)
   remove: function() {
-    for (var line of this.lines) {
-      line.snapObj.remove();
-    }
-
+    // remove all lines
+    this.lines.forEach(line => line.snapObj.remove());
     this.lines = [];
 
     if (this.nodes) {
-      for (var node of this.nodes) {
-        node.remove();
-      }
+      // remove all nodes
+      this.nodes.forEach(node => node.remove());
     }
-  },
-
-  // create line svg and add to lines array
-  // arr contents : [startX, startY, endX, endY]
-  drawLine: function(options, ...arr) {
-    this.lines.push(options.drawing.surface.line(...arr).attr(options.style));
   },
 };
 

@@ -1,9 +1,9 @@
 import knotUtils from './knot-utils.js';
 import config from './config';
 import kldIntersections from 'kld-intersections';
-import { drawing } from './drawing.js';
 
 export default function PointedReturn(options) {
+  var drawing = options.drawing;
   var pr = options.pr;
   var group = options.group;
 

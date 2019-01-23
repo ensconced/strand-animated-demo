@@ -20,20 +20,8 @@ export default function Knot(drawing) {
   function drawOutline(outline) {
     var points = outline.reduce(knotUtils.reducer, []);
     var snp = drawing.surface.polyline(points);
-    /*
-	   for (var curve of outline) {
-	   	var snp;
-		if (curve.constructor.name === "StraightLine") {
-			snp = drawing.surface.path(`M${curve.start[0]} ${curve.start[1]} L${curve.end[0]} ${curve.end[1]}`);
-		} else {
-			// here we have the beziers
-			var cntrls = curve.points.map(point => [point.x, point.y]);
-			snp = drawing.surface.path(knotUtils.bezString(...cntrls));
-		}
-*/
     group.add(snp);
     knotUtils.format(snp);
-    // }
   }
 
   function logCrossing(direction) {
@@ -215,6 +203,7 @@ export default function Knot(drawing) {
         } else if (cpORpr.pr) {
           // here we draw the PRs
           var pr = new PointedReturn({
+            drawing,
             pr: cpORpr,
             group: group,
             middleOutbound: strand.points[knotUtils.previousCyclicalIdx(strand, i)].outbound,

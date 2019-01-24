@@ -47,7 +47,7 @@ function addNode() {
   if (!drawing.frame) {
     drawing.frame = new Frame({});
   }
-  drawing.frame.addNode(event);
+  drawing.frame.handleNodePlacement(event);
 }
 function setFrameType() {
   const frameType = document.querySelector('[name=frame-type]:checked').value;
@@ -65,7 +65,7 @@ function setFrameType() {
   }
 }
 function startAddNodeMode() {
-  drawing.graphArea.addEventListener('click', addNode);
+  drawing.graphArea.addEventListener('click', addNode, false);
 }
 function startAddLineMode() {
   drawing.graphArea.removeEventListener('click', addNode);

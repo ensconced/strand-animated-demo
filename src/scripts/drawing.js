@@ -1,6 +1,7 @@
 import Knot from './knot.js';
 import Frame from './frame.js';
 import Mouse from './mouse.js';
+import { identicalObjects } from './general-utils';
 
 function Drawing() {
   this.graphArea = document.getElementById('surface');
@@ -34,18 +35,19 @@ Drawing.prototype = {
     Mouse.doIfInGraph(this.initialBox, this.drawFrame.bind(this));
   },
   handleMouseMove() {
+    const previousBox = this.finalBox;
     this.finalBox = Mouse.rowAndCol(event);
-    // doIfInGraph wrapper here prevents drawn frames from extending...
-    // ... beyond the boundaries of the graph
-    Mouse.doIfInGraph(this.finalBox, function() {
-      if (this.frame) this.frame.remove();
-      this.frame = new Frame({
-        initialBox: this.initialBox,
-        finalBox: this.finalBox,
-        drawing: this,
-      });
-      this.frame.draw();
-    }.bind(this));
+    if (!identicalObjects(previousBox, this.finalBox)) {
+      Mouse.doIfInGraph(this.finalBox, function() {
+        if (this.frame) this.frame.remove();
+        this.frame = new Frame({
+          initialBox: this.initialBox,
+          finalBox: this.finalBox,
+          drawing: this,
+        });
+        this.frame.draw();
+      }.bind(this));
+    }
   },
   handleMouseUp() {
     this.graphArea.removeEventListener('mousemove', this.boundHandleMouseMove);

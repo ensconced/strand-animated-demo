@@ -15,3 +15,6 @@ export function coordinateSet({ leftmost, rightmost, topmost, bottommost }) {
   const yCoords = integerRange(topmost, bottommost + 1);
   return cartesianProduct(xCoords, yCoords);
 }
+export function distanceBetween(coordsA, coordsB) {
+  return ((coordsA[0] - coordsB[0])**2 + (coordsA[1] - coordsB[1])**2)**0.5;
+}

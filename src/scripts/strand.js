@@ -19,7 +19,6 @@ export default function Strand() {
 
           var overLeft = point.overInLeft.concat(point.overOutLeft);
           var overRight = point.overInRight.concat(point.overOutRight);
-
           var intersectLOut =
             knotUtils.collectionIntersect(point.underOutLeft, overLeft) ||
             knotUtils.collectionIntersect(point.underOutLeft, overRight);

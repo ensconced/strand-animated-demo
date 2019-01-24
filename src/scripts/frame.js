@@ -3,8 +3,7 @@ import config from './config.js';
 import Line from './line.js';
 import Node from './node.js';
 import Mouse from './mouse.js';
-import surface from './main.js';
-import { identicalObjects, coordinateSet } from './general-utils.js';
+import { coordinateSet } from './general-utils.js';
 
 export default function Frame(options) {
   this.options = options;
@@ -42,15 +41,28 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
       return someNode.sameNode(node);
     });
   },
-  lineIsBetween(line, nodeA, nodeB) {
-    const isForwards = line.startNode.sameNode(nodeA) && line.endNode.sameNode(nodeB);
-    const isReversed = line.startNode.sameNode(nodeB) && line.endNode.sameNode(nodeA);
-    return isForwards || isReversed;
+  closestNodeToPoint(coords) {
+    return this.nodes.reduce(function (acc, node) {
+      if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
+        return node;
+      } else {
+        return acc;
+      }
+    });
+  },
+  findProximalNode(coords) {
+    const closestNode = this.closestNodeToPoint(coords);
+    const proximityThreshold = config.nodeSelectionMinProximity;
+    if (closestNode.distanceFromPoint(coords) < proximityThreshold) {
+      return closestNode;
+    } else {
+      return undefined;
+    }
   },
   lineExistsBetween(nodeA, nodeB) {
     const allLines = this.lines;
     return !!allLines.find(line => {
-      return this.lineIsBetween(line, nodeA, nodeB);
+      return line.isBetween(nodeA, nodeB);
     });
   },
   stopDrawingLine() {
@@ -71,19 +83,11 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     this.draw();
   },
   redrawWithKnot() {
-    if (this.options.drawing.knot) this.options.drawing.knot.remove();
-    this.redraw();
+    if (this.options.drawing.knot) {
+      this.options.drawing.knot.remove();
+    }
     this.options.drawing.drawKnot();
-  },
-  makeMouseUpHandler(node) {
-    return () => {
-      this.stopDrawingLine();
-      if (this.hoveredNode && !this.lineExistsBetween(node, this.hoveredNode)) {
-        this.markAsAdjacent(node, this.hoveredNode);
-      }
-      this.redrawWithKnot();
-      this.startLineDrawingMode();
-    };
+    this.redraw();
   },
   hoverIn(node) {
     return () => {
@@ -92,28 +96,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   },
   hoverOut() {
     this.hoveredNode = undefined;
-  },
-  onMove(node) {
-    return (event) => {
-      this.userLine && this.userLine.remove();
-      this.userLine = surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
-      this.userLine.attr(config.frame);
-    };
-  },
-  onDown(node) {
-    return () => {
-      this.moveListener = this.onMove(node);
-      this.options.drawing.graphArea.addEventListener('mousemove', this.moveListener);
-      this.upListener = this.makeMouseUpHandler(node);
-      document.addEventListener('mouseup', this.upListener);
-    };
-  },
-  startLineDrawingMode() {
-    this.nodes.forEach(node => {
-      this.downListener = this.onDown(node);
-      node.snapObject.mousedown(this.downListener);
-      node.snapObject.hover(this.hoverIn(node), this.hoverOut);
-    });
   },
   showCrossingPoints() {
     this.lines.forEach(line => line.drawCrossingPoints());
@@ -136,19 +118,14 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
       );
     });
   },
-  showNodes() {
+  showAllNodes() {
     this.nodes.forEach(node => node.draw());
-  },
-  nodesAreAdjacent(nodeA, nodeB) {
-    const xDiff = Math.abs(nodeB.gridX - nodeA.gridX);
-    const yDiff = Math.abs(nodeB.gridY - nodeA.gridY);
-    return identicalObjects([xDiff, yDiff].sort(), [0, 1]);
   },
   setLines() {
     this.nodes.forEach(firstNode => {
       this.adjacencyList.push([]);
       this.nodes.forEach((secondNode, j) => {
-        if (this.nodesAreAdjacent(firstNode, secondNode)) {
+        if (firstNode.isAdjacentTo(secondNode)) {
           this.adjacencyList[this.adjacencyList.length - 1].push(j);
         }
       });
@@ -160,7 +137,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
         startNode,
         endNode,
         style: config.frame,
-        drawing: this.options.drawing,
       })
     );
   },
@@ -175,21 +151,14 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     });
   },
   linesOutFrom(node) {
-    return this.lines.filter(line => this.lineVisitsNode(line, node));
-  },
-  lineVisitsNode(line, node) {
-    return line.startNode.sameNode(node) || line.endNode.sameNode(node);
+    return this.lines.filter(line => line.visits(node));
   },
   draw() {
     this.drawLines();
-    this.showNodes();
+    this.showAllNodes();
   },
   overlapsExistingNode(pxX, pxY) {
-    return this.nodes.some(function(node) {
-      const deltaX = Math.abs(pxX - node.x);
-      const deltaY = Math.abs(pxY - node.y);
-      return (deltaX ** 2 + deltaY ** 2) ** 0.5 <= config.nodeStyle.radius;
-    });
+    return this.nodes.some(node => node.hasOverlap(pxX, pxY));
   },
   addNode(coords) {
     this.nodes.push(
@@ -197,7 +166,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
         x: coords[0],
         y: coords[1],
         gridSystem: 'square',
-        drawing: this.options.drawing,
       })
     );
   },

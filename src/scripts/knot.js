@@ -4,44 +4,160 @@ import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
 import surface from './main.js';
 
-export default function Knot(drawing) {
-  var targetNode;
-  var currentLine;
-  var roundabout;
-  var direction;
-  var group = surface.g();
-  var strands = [];
+export default function Knot(frame) {
+  this.group = surface.g();
+  this.strands = [];
 
-  this.drawing = drawing;
+  this.frame = frame;
 
   this.remove = function() {
-    group.remove();
+    this.group.remove();
   };
+  this.generateStrands();
+  this.generateOffsets();
+  this.trimUnders();
+  this.draw();
+  this.frame.remove();
+  this.frame.draw();
+  // drawing.stopDrawingFrame();
+}
 
-  function drawOutline(outline) {
+Knot.prototype = {
+  constructor: Knot,
+  selectLine() {
+    // select first line - any line where CP is...
+    // uncrossed in either R or L direction
+    for (var line of this.frame.lines) {
+      if (this.uncrossed(line)) {
+        this.currentLine = line;
+        break;
+      }
+    }
+  },
+  selectDirection() {
+    // choose direction
+    this.direction = this.currentLine.crossingPoint.uncrossedDirection();
+    // could start going in either direction,
+    // but just go towards endNode of line
+    this.targetNode = this.currentLine.endNode;
+  },
+  addPoint(strand) {
+    strand.add({
+      point: this.currentLine.crossingPoint,
+      x: this.currentLine.crossingPoint.coords[0],
+      y: this.currentLine.crossingPoint.coords[1],
+      pr: false,
+      direction: this.direction,
+    });
+    if (this.pointedReturn()) {
+      var startCoords = this.currentLine.crossingPoint.coords;
+      var endCoords = this.getNextLine(this.direction).crossingPoint.coords;
+      var prCoords = this.getApexCoords(startCoords, endCoords, this.direction);
+      strand.add({
+        point: {},
+        x: prCoords[0],
+        y: prCoords[1],
+        pr: this.oppositeDirection(),
+      });
+    }
+    this.logCrossing(this.direction);
+  },
+  selectNextPoint() {
+    this.currentLine = this.getNextLine(this.direction);
+    this.direction = this.oppositeDirection();
+  },
+  setNewTargetNode() {
+    // set new targetNode
+    if (this.goingBackwards()) {
+      this.targetNode = this.currentLine.endNode;
+    } else {
+      this.targetNode = this.currentLine.startNode;
+    }
+  },
+  endOfStrand() {
+    return this.getNextLine(this.direction).crossingPoint.crossed(this.oppositeDirection());
+  },
+  generateStrands() {
+    while (this.frame.lines.some(this.uncrossed)) {
+      // on each iteration of this loop we determine...
+      // the crossingpoints through which a single strand will pass
+      var strand = new Strand();
+
+      this.selectLine();
+      this.selectDirection();
+      this.addPoint(strand);
+
+      // in the below while loop we add all the
+      // crossingpoints through which our strand passes
+      while (true) {
+        this.selectNextPoint();
+        this.setNewTargetNode();
+        this.addPoint(strand);
+        if (this.endOfStrand()) break;
+      }
+      this.strands.push(strand);
+    }
+  },
+  generateOffsets() {
+    for (var strand of this.strands) {
+      var c = new Contour(strand);
+      c.assignOffsets();
+    }
+  },
+  trimUnders() {
+    //    for (var strand of this.strands) {
+    //      strand.trimUnders();
+    //    }
+  },
+  draw() {
+    for (var strand of this.strands) {
+      for (var i = 0; i < strand.length; i++) {
+        var cpORpr = strand.points[i];
+        // now draw everything except PRs
+        if (!(cpORpr.pr || strand.points[knotUtils.nextCyclicalIdx(strand, i)].pr)) {
+          var point = cpORpr.point;
+          debugger;
+          if (cpORpr.direction === 'R') {
+            this.drawOutline(point.overOutLeft);
+            this.drawOutline(point.overOutRight);
+          } else {
+            this.drawOutline(point.underOutLeft);
+            this.drawOutline(point.underOutRight);
+          }
+        } else if (cpORpr.pr) {
+          // here we draw the PRs
+          var pr = new PointedReturn({
+            pr: cpORpr,
+            group: this.group,
+            middleOutbound: strand.points[knotUtils.previousCyclicalIdx(strand, i)].outbound,
+            middleInbound: cpORpr.outbound,
+          });
+          pr.draw();
+        }
+      }
+    }
+  },
+  drawOutline(outline) {
     var points = outline.reduce(knotUtils.reducer, []);
     var snp = surface.polyline(points);
-    group.add(snp);
+    this.group.add(snp);
     knotUtils.format(snp);
-  }
-
-  function logCrossing(direction) {
+  },
+  logCrossing(direction) {
     if (direction === 'R') {
-      currentLine.crossingPoint.crossedRight = true;
+      this.currentLine.crossingPoint.crossedRight = true;
     } else {
-      currentLine.crossingPoint.crossedLeft = true;
+      this.currentLine.crossingPoint.crossedLeft = true;
     }
-  }
-
-  function compareByAngle(lineA, lineB) {
-    if (lineA.angleOutFrom(targetNode) < lineB.angleOutFrom(targetNode)) {
+  },
+  compareByAngle(lineA, lineB) {
+    if (lineA.angleOutFrom(this.targetNode) < lineB.angleOutFrom(this.targetNode)) {
       return -1;
     } else {
       return 1;
     }
-  }
-
-  function getApexCoords(startPoint, endPoint, direction) {
+  },
+  getApexCoords(startPoint, endPoint, direction) {
     var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
     var normal;
     if (direction === 'R') {
@@ -50,12 +166,11 @@ export default function Knot(drawing) {
       normal = [startToEnd[1], -startToEnd[0]];
     }
     return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
-  }
-
-  function getNextLine(direction) {
-    roundabout = drawing.frame.linesOutFrom(targetNode);
-    var orderedLinesOut = roundabout.slice().sort(compareByAngle);
-    var inIndex = orderedLinesOut.indexOf(currentLine);
+  },
+  getNextLine(direction) {
+    this.roundabout = this.frame.linesOutFrom(this.targetNode);
+    var orderedLinesOut = this.roundabout.slice().sort(this.compareByAngle.bind(this));
+    var inIndex = orderedLinesOut.indexOf(this.currentLine);
 
     if (direction === 'R') {
       // pad out list with first element...
@@ -67,165 +182,34 @@ export default function Knot(drawing) {
       orderedLinesOut.push(orderedLinesOut[0]);
       return orderedLinesOut[inIndex + 1];
     }
-  }
-
-  function uncrossed(line) {
+  },
+  uncrossed(line) {
     return !line.crossingPoint.fullyCrossed();
-  }
-
-  function goingBackwards() {
-    return currentLine.startNode.sameNode(targetNode);
-  }
-
-  function traverseNextBackwards() {
-    return getNextLine(direction).endNode.sameNode(targetNode);
-  }
-
-  function currentBearing() {
-    return currentLine.angleOutCP({
-      direction: direction,
-      reverse: goingBackwards(),
+  },
+  goingBackwards() {
+    return this.currentLine.startNode.sameNode(this.targetNode);
+  },
+  traverseNextBackwards() {
+    return this.getNextLine(this.direction).endNode.sameNode(this.targetNode);
+  },
+  currentBearing() {
+    return this.currentLine.angleOutCP({
+      direction: this.direction,
+      reverse: this.goingBackwards(),
     });
-  }
-
-  function nextBearing() {
-    return getNextLine(direction).angleOutCP({
-      direction: oppositeDirection(),
-      reverse: traverseNextBackwards(),
+  },
+  nextBearing() {
+    return this.getNextLine(this.direction).angleOutCP({
+      direction: this.oppositeDirection(),
+      reverse: this.traverseNextBackwards(),
     });
-  }
-
-  function pointedReturn() {
-    var angleDelta = Math.abs(currentBearing() - nextBearing());
+  },
+  pointedReturn() {
+    var angleDelta = Math.abs(this.currentBearing() - this.nextBearing());
     var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
     return smallerAngle > 1.6;
-  }
-
-  function oppositeDirection() {
-    return direction === 'R' ? 'L' : 'R';
-  }
-
-  function generateStrands() {
-    function selectLine() {
-      // select first line - any line where CP is...
-      // uncrossed in either R or L direction
-      for (var line of drawing.frame.lines) {
-        if (uncrossed(line)) {
-          currentLine = line;
-          break;
-        }
-      }
-    }
-    function selectDirection() {
-      // choose direction
-      direction = currentLine.crossingPoint.uncrossedDirection();
-      // could start going in either direction,
-      // but just go towards endNode of line
-      targetNode = currentLine.endNode;
-    }
-    function addPoint() {
-      strand.add({
-        point: currentLine.crossingPoint,
-        x: currentLine.crossingPoint.coords[0],
-        y: currentLine.crossingPoint.coords[1],
-        pr: false,
-        direction: direction,
-      });
-      if (pointedReturn()) {
-        var startCoords = currentLine.crossingPoint.coords;
-        var endCoords = getNextLine(direction).crossingPoint.coords;
-        var prCoords = getApexCoords(startCoords, endCoords, direction);
-        strand.add({
-          point: {},
-          x: prCoords[0],
-          y: prCoords[1],
-          pr: oppositeDirection(),
-        });
-      }
-      logCrossing(direction);
-    }
-    function selectNextPoint() {
-      currentLine = getNextLine(direction);
-      direction = oppositeDirection();
-    }
-    function setNewTargetNode() {
-      // set new targetNode
-      if (goingBackwards()) {
-        targetNode = currentLine.endNode;
-      } else {
-        targetNode = currentLine.startNode;
-      }
-    }
-    function endOfStrand() {
-      return getNextLine(direction).crossingPoint.crossed(oppositeDirection());
-    }
-    while (drawing.frame.lines.some(uncrossed)) {
-      // on each iteration of this loop we determine...
-      // the crossingpoints through which a single strand will pass
-      var strand = new Strand();
-
-      selectLine();
-      selectDirection();
-      addPoint();
-
-      // in the below while loop we add all the
-      // crossingpoints through which our strand passes
-      while (true) {
-        selectNextPoint();
-        setNewTargetNode();
-        addPoint();
-        if (endOfStrand()) break;
-      }
-      strands.push(strand);
-    }
-  }
-
-  function trimUnders() {
-    for (var strand of strands) {
-      strand.trimUnders();
-    }
-  }
-
-  function draw() {
-    for (var strand of strands) {
-      for (var i = 0; i < strand.length; i++) {
-        //debugger;
-        var cpORpr = strand.points[i];
-        // now draw everything except PRs
-        if (!(cpORpr.pr || strand.points[knotUtils.nextCyclicalIdx(strand, i)].pr)) {
-          var point = cpORpr.point;
-          if (cpORpr.direction === 'R') {
-            drawOutline(point.overOutLeft);
-            drawOutline(point.overOutRight);
-          } else {
-            drawOutline(point.underOutLeft);
-            drawOutline(point.underOutRight);
-          }
-        } else if (cpORpr.pr) {
-          // here we draw the PRs
-          var pr = new PointedReturn({
-            pr: cpORpr,
-            group: group,
-            middleOutbound: strand.points[knotUtils.previousCyclicalIdx(strand, i)].outbound,
-            middleInbound: cpORpr.outbound,
-          });
-          pr.draw();
-        }
-      }
-    }
-  }
-
-  function generateOffsets() {
-    for (var strand of strands) {
-      var c = new Contour(strand, drawing, group);
-      c.assignOffsets();
-    }
-  }
-  generateStrands();
-  generateOffsets();
-  trimUnders();
-  draw();
-  drawing.frame.remove();
-  drawing.frame.draw();
-  drawing.stopDrawingFrame();
-}
+  },
+  oppositeDirection() {
+    return this.direction === 'R' ? 'L' : 'R';
+  },
+};

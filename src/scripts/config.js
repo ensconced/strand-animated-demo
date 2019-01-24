@@ -1,5 +1,6 @@
 export default {
   resolution: 10,
+  nodeSelectionMinProximity: 20,
   knot: {
     stroke: 'black',
     strokeWidth: 15,

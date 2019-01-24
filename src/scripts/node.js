@@ -1,6 +1,7 @@
 import Mouse from './mouse.js';
 import surface from './main.js';
 import config from './config.js';
+import { identicalObjects, distanceBetween } from './general-utils.js';
 
 export default function Node(options) {
   if (options.gridSystem === 'square') {
@@ -26,5 +27,18 @@ Node.prototype = {
   },
   remove() {
     if (this.snapObject) this.snapObject.remove();
+  },
+  hasOverlap(pxX, pxY) {
+    const deltaX = Math.abs(pxX - this.x);
+    const deltaY = Math.abs(pxY - this.y);
+    return (deltaX ** 2 + deltaY ** 2) ** 0.5 <= config.nodeStyle.radius;
+  },
+  distanceFromPoint(coords) {
+    return distanceBetween([this.x, this.y], [coords[0], coords[1]]);
+  },
+  isAdjacentTo(otherNode) {
+    const xDiff = Math.abs(otherNode.gridX - this.gridX);
+    const yDiff = Math.abs(otherNode.gridY - this.gridY);
+    return identicalObjects([xDiff, yDiff].sort(), [0, 1]);
   },
 };

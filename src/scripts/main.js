@@ -1,7 +1,7 @@
 import Drawing from './drawing.js';
 import Snap from 'snapsvg';
 import Mouse from './mouse.js';
-import Frame from './frame.js';
+//import Frame from './frame.js';
 import Graph from './graph.js';
 export default Snap('#surface');
 
@@ -43,12 +43,6 @@ function startFreeformMode() {
   if (drawing.graph) drawing.graph.remove();
   makeAllNodesDraggable();
 }
-function addNode() {
-  if (!drawing.frame) {
-    drawing.frame = new Frame({});
-  }
-  drawing.frame.handleNodePlacement(event);
-}
 function setFrameType() {
   const frameType = document.querySelector('[name=frame-type]:checked').value;
   switch (frameType) {
@@ -64,18 +58,43 @@ function setFrameType() {
     break;
   }
 }
-function startAddNodeMode() {
-  drawing.graphArea.addEventListener('click', addNode, false);
-}
-function startAddLineMode() {
-  drawing.graphArea.removeEventListener('click', addNode);
-  drawing.frame.startLineDrawingMode();
+
+// function makeDownHandler(node) {
+//   return () => {
+//     const moveListener = makeMoveHandler(node);
+//     drawing.graphArea.addEventListener('mousemove', moveListener);
+//     this.upListener = this.makeMouseUpHandler(node);
+//     document.addEventListener('mouseup', this.upListener);
+//   };
+// }//
+
+// function makeMouseUpHandler(node) {
+//   return () => {
+//     this.stopDrawingLine();
+//     if (this.hoveredNode && !this.lineExistsBetween(node, this.hoveredNode)) {
+//       this.markAsAdjacent(node, this.hoveredNode);
+//     }
+//     this.redrawWithKnot();
+//     this.startLineDrawingMode();
+//   };
+// }//
+
+// function makeMoveHandler(node) {
+//   return (event) => {
+//     this.userLine && this.userLine.remove();
+//     this.userLine = Snap('#surface').line(node.x, node.y, ...Mouse.relativeCoords(event));
+//     this.userLine.attr(config.frame);
+//   };
+// }
+
+function changeDrawingMode(newMode) {
+  return () => drawing.mode = newMode;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('add-node').addEventListener('click', startAddNodeMode, false);
-  document.getElementById('add-line').addEventListener('click', startAddLineMode, false);
-  document.getElementById('add-grid').addEventListener('click', drawing.addUserFrame.bind(drawing), false);
+  document.getElementById('add-node').addEventListener('click', changeDrawingMode('node'), false);
+  document.getElementById('add-line').addEventListener('click', changeDrawingMode('line'), false);
+  document.getElementById('add-grid').addEventListener('click', changeDrawingMode('grid'), false);
   document.getElementById('frame-type').addEventListener('click', setFrameType, false);
   setFrameType();
 }, false);

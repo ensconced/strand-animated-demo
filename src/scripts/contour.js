@@ -7,11 +7,8 @@ import StraightLine from './straight-line.js';
 export default function Contour(strand) {
   this.strand = strand;
   this.theta = 1.5;
-  this.prBezes = [];
   this.matrix = [];
   this.equals = [];
-
-  this.pushPointedReturns();
   const { xCntrlPoints, yCntrlPoints } = this.matrixSolution();
 
   const polygons = [];
@@ -178,17 +175,6 @@ Contour.prototype = {
     this.matrix.push(row3.concat(row1));
     this.equals.push((1 - Math.cos(angle)) * this.strand.points[i].x + Math.sin(angle) * this.strand.points[i].y),
     this.equals.push((1 - Math.cos(angle)) * this.strand.points[i].y - Math.sin(angle) * this.strand.points[i].x);
-  },
-  pushPointedReturns() {
-    this.strand.points.forEach((point, idx) => {
-      if (point.pr) {
-        this.prBezes.push({
-          direction: point.pr,
-          out: idx - 1 >= 0 ? idx - 1 : this.strand.length - 1,
-          in: idx <= this.strand.length - 1 ? idx : 0,
-        });
-      }
-    });
   },
   getPRandDirection(strand, index) {
     var pr;

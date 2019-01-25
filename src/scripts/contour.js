@@ -14,9 +14,9 @@ export default function Contour(strand) {
   const polygons = [];
 
   for (var index = 0; index < strand.length; index++) {
-    const polygon = this.constructPolygon(index, xCntrlPoints, yCntrlPoints);
+    const polygon = this.getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
-    const bez = new Bezier(...polygon.bezPoints.reduce((arr, sub) => arr.concat(sub)));
+    const bez = this.bezier(polygon);
 
     // adding properties to points...
     this.assignOutboundBezes(strand, index, bez);
@@ -26,6 +26,9 @@ export default function Contour(strand) {
 
 Contour.prototype = {
   constructor: Contour,
+  bezier(polygon) {
+    return new Bezier(...polygon.reduce((arr, sub) => arr.concat(sub)));
+  },
   matrixSolution() {
     this.constructMatrix();
     const cntrlPoints = numeric.solve(this.matrix, this.equals);
@@ -190,13 +193,5 @@ Contour.prototype = {
       direction = strand.points[index].direction;
     }
     return {pr, direction,};
-  },
-  constructPolygon(index, xCntrlPoints, yCntrlPoints) {
-    const prAndDirection = this.getPRandDirection(this.strand, index);
-    return {
-      bezPoints: this.getBezier(index, xCntrlPoints, yCntrlPoints),
-      pr: prAndDirection.pr,
-      direction: prAndDirection.direction,
-    };
   },
 };

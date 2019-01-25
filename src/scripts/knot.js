@@ -28,10 +28,7 @@ Knot.prototype = {
     this.currentLine = this.frame.lines.find(this.uncrossed);
   },
   selectDirection() {
-    // choose direction
     this.direction = this.currentLine.crossingPoint.uncrossedDirection();
-    // could start going in either direction,
-    // but just go towards endNode of line
     this.targetNode = this.currentLine.endNode;
   },
   addPoint(strand) {
@@ -98,9 +95,9 @@ Knot.prototype = {
     }
   },
   trimUnders() {
-    //    for (var strand of this.strands) {
-    //      strand.trimUnders();
-    //    }
+    for (var strand of this.strands) {
+      strand.trimUnders();
+    }
   },
   draw() {
     for (var strand of this.strands) {

@@ -116,7 +116,6 @@ Knot.prototype = {
         // now draw everything except PRs
         if (!(cpORpr.pr || strand.points[knotUtils.nextCyclicalIdx(strand, i)].pr)) {
           var point = cpORpr.point;
-          debugger;
           if (cpORpr.direction === 'R') {
             this.drawOutline(point.overOutLeft);
             this.drawOutline(point.overOutRight);

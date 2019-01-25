@@ -25,14 +25,7 @@ export default function Knot(frame) {
 Knot.prototype = {
   constructor: Knot,
   selectLine() {
-    // select first line - any line where CP is...
-    // uncrossed in either R or L direction
-    for (var line of this.frame.lines) {
-      if (this.uncrossed(line)) {
-        this.currentLine = line;
-        break;
-      }
-    }
+    this.currentLine = this.frame.lines.find(this.uncrossed);
   },
   selectDirection() {
     // choose direction

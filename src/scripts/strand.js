@@ -2,23 +2,26 @@ import knotUtils from './knot-utils.js';
 
 export default function Strand(frame) {
   this.frame = frame;
-  this.points = [];
   this.length = 0;
-
-  this.currentLine = this.frame.firstUncrossedLine();
-  this.selectDirection();
-  this.addPoint();
-
-  // in the below while loop we add all the
-  // crossingpoints through which our strand passes
-  while (true) {
-    this.addNextPoint();
-    if (this.endOfStrand()) break;
-  }
+  this.points = [];
+  this.addAllPoints();
 }
 
 Strand.prototype = {
   constructor: Strand,
+  addAllPoints() {
+    this.currentLine = this.frame.firstUncrossedLine();
+
+    this.selectDirection();
+    this.addPoint();
+
+    // in the below while loop we add all the
+    // crossingpoints through which our strand passes
+    while (true) {
+      this.addNextPoint();
+      if (this.endOfStrand()) break;
+    }
+  },
   addPoint() {
     this.add({
       point: this.currentLine.crossingPoint,

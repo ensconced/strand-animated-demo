@@ -178,4 +178,7 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
       this.redraw();
     }
   },
+  firstUncrossedLine() {
+    return this.lines.find(line => line.uncrossed());
+  },
 });

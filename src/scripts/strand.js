@@ -5,7 +5,7 @@ export default function Strand(frame) {
   this.points = [];
   this.length = 0;
 
-  this.currentLine = this.firstUncrossedLine();
+  this.currentLine = this.frame.firstUncrossedLine();
   this.selectDirection();
   this.addPoint();
 
@@ -125,9 +125,6 @@ Strand.prototype = {
     var angleDelta = Math.abs(this.currentBearing() - this.nextBearing());
     var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
     return smallerAngle > 1.6;
-  },
-  firstUncrossedLine() {
-    return this.frame.lines.find(line => line.uncrossed());
   },
   selectDirection() {
     this.direction = this.currentLine.crossingPoint.uncrossedDirection();

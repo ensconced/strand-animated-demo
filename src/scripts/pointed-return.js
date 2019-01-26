@@ -4,49 +4,54 @@ import kldIntersections from 'kld-intersections';
 import surface from './main.js';
 
 export default function PointedReturn(options) {
-  var pr = options.pr;
-  var group = options.group;
+  this.options = options;
+  this.pr = options.pr;
+  this.group = options.group;
+}
 
-  function clippedOutboundPath(intersection, polyline) {
+PointedReturn.prototype = {
+  constructor: PointedReturn,
+  draw() {
+    this.drawInners();
+    this.drawOuters();
+  },
+  clippedOutboundPath(intersection, polyline) {
     var points = polyline.slice(0, intersection.idxA + 1);
     points.push(intersection.intersection);
     return points;
-  }
-
-  function clippedInboundPath(intersection, polyline) {
+  },
+  clippedInboundPath(intersection, polyline) {
     var points = polyline.slice(intersection.idxB + 1);
     points.unshift(intersection.intersection);
     return points;
-  }
-
-  function drawInners() {
-    pr = pr.point;
+  },
+  drawInners() {
+    this.pr = this.pr.point;
     // get intersection of inner outbound with inner inbound
-    var innerOutboundPolyline = pr.innerOutbound;
-    var innerInboundPolyline = pr.innerInbound;
+    var innerOutboundPolyline = this.pr.innerOutbound;
+    var innerInboundPolyline = this.pr.innerInbound;
     var intersection = knotUtils.collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
     // with the part of inbound inner from after the intersection...
-    var outClipped = clippedOutboundPath(intersection, innerOutboundPolyline);
-    var inClipped = clippedInboundPath(intersection, innerInboundPolyline);
+    var outClipped = this.clippedOutboundPath(intersection, innerOutboundPolyline);
+    var inClipped = this.clippedInboundPath(intersection, innerInboundPolyline);
     var points = outClipped.concat(inClipped).reduce(knotUtils.reducer, []);
     var snp = surface.polyline(points);
-    group.add(snp);
+    this.group.add(snp);
     knotUtils.format(snp);
-  }
-
-  function drawOuters() {
+  },
+  drawOuters() {
     function kldPoint(ext) {
       return new kld.Point2D(ext.x, ext.y);
     }
 
     // get intersection of inner outbound with inner inbound
-    var outerOutboundPolyline = pr.outerOutbound;
-    var outerInboundPolyline = pr.outerInbound;
+    var outerOutboundPolyline = this.pr.outerOutbound;
+    var outerInboundPolyline = this.pr.outerInbound;
 
     var d;
-    if (options.pr.pr === 'L') {
+    if (this.options.pr.pr === 'L') {
       d = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
     } else {
       d = -(config.knot.strokeWidth + config.knot.borderWidth) / 2;
@@ -57,8 +62,8 @@ export default function PointedReturn(options) {
     var tOutbound = 1;
     var tInbound = 0;
     var tStep = 0.02;
-    var outboundExtensions = [options.middleOutbound.offset(1, d)];
-    var inboundExtensions = [options.middleInbound.offset(0, d)];
+    var outboundExtensions = [this.options.middleOutbound.offset(1, d)];
+    var inboundExtensions = [this.options.middleInbound.offset(0, d)];
     var kld = kldIntersections;
     var intersection = new kld.Intersection('No Intersection');
     // build up polylines until they intersect
@@ -66,8 +71,8 @@ export default function PointedReturn(options) {
       // prepare for extension
       tOutbound += tStep;
       tInbound -= tStep;
-      outboundExtensions.push(options.middleOutbound.offset(tOutbound, d));
-      inboundExtensions.unshift(options.middleInbound.offset(tInbound, d));
+      outboundExtensions.push(this.options.middleOutbound.offset(tOutbound, d));
+      inboundExtensions.unshift(this.options.middleInbound.offset(tInbound, d));
       var outboundPolyline = outboundExtensions.map(kldPoint);
       var inboundPolyline = inboundExtensions.map(kldPoint);
       // get intersection...
@@ -94,12 +99,7 @@ export default function PointedReturn(options) {
     points = points.concat(outboundExtensions.concat(outerInboundPolyline));
     var pointList = points.reduce(knotUtils.reducer, []);
     var snp = surface.polyline(pointList);
-    group.add(snp);
+    this.group.add(snp);
     knotUtils.format(snp);
-  }
-
-  this.draw = function() {
-    drawInners();
-    drawOuters();
-  };
-}
+  },
+};

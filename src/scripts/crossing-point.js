@@ -1,4 +1,5 @@
 import config from './config.js';
+import StrandElement from './strand-element.js';
 
 export default function CrossingPoint(startX, startY, endX, endY, line) {
   this.line = line;
@@ -8,7 +9,7 @@ export default function CrossingPoint(startX, startY, endX, endY, line) {
   this.coords = [(startX + endX) / 2, (startY + endY) / 2];
 }
 
-CrossingPoint.prototype = {
+CrossingPoint.prototype = Object.assign(Object.create(StrandElement.prototype), {
   constructor: CrossingPoint,
   crossed(direction) {
     if (direction === 'L') {
@@ -49,4 +50,4 @@ CrossingPoint.prototype = {
       return this.rotate(...this.coords, ...initialPosition, -Math.PI / 4);
     }
   },
-};
+});

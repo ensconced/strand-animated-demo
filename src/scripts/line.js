@@ -25,6 +25,9 @@ export default function Line(options) {
 
 Line.prototype = {
   constructor: Line,
+  uncrossed() {
+    return !this.crossingPoint.fullyCrossed();
+  },
   vector() {
     return [this.endX - this.startX, this.endY - this.startY];
   },

@@ -1,4 +1,5 @@
 import knotUtils from './knot-utils.js';
+import StrandElement from './strand-element.js';
 
 export default function Strand(frame) {
   this.frame = frame;
@@ -11,10 +12,8 @@ Strand.prototype = {
   constructor: Strand,
   addAllPoints() {
     this.currentLine = this.frame.firstUncrossedLine();
-
     this.selectDirection();
     this.addPoint();
-
     // in the below while loop we add all the
     // crossingpoints through which our strand passes
     while (true) {
@@ -23,13 +22,12 @@ Strand.prototype = {
     }
   },
   addPoint() {
-    this.add({
+    this.add(new StrandElement(    {
       point: this.currentLine.crossingPoint,
-      x: this.currentLine.crossingPoint.coords[0],
-      y: this.currentLine.crossingPoint.coords[1],
       pr: false,
       direction: this.direction,
-    });
+    }));
+
     if (this.pointedReturn()) {
       var startCoords = this.currentLine.crossingPoint.coords;
       var endCoords = this.getNextLine(this.direction).crossingPoint.coords;
@@ -144,7 +142,6 @@ Strand.prototype = {
         // now trim the unders
         if (!cpORpr.point.trimmed) {
           // i.e. if not already trimmed
-
           var overLeft = point.overInLeft.concat(point.overOutLeft);
           var overRight = point.overInRight.concat(point.overOutRight);
           var intersectLOut =

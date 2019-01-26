@@ -90,7 +90,7 @@ Knot.prototype = {
   },
   generateOffsets() {
     for (var strand of this.strands) {
-      var c = new Contour(strand);
+      var c = new Contour(strand.points);
       c.assignOffsets();
     }
   },

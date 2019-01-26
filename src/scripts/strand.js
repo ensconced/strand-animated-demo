@@ -5,15 +5,15 @@ export default function Strand(frame) {
   this.frame = frame;
   this.length = 0;
   this.points = [];
-  this.addAllPoints();
+  this.addAllElements();
 }
 
 Strand.prototype = {
   constructor: Strand,
-  addAllPoints() {
+  addAllElements() {
     this.currentLine = this.frame.firstUncrossedLine();
     this.selectDirection();
-    this.addPoint();
+    this.addElement();
     // in the below while loop we add all the
     // crossingpoints through which our strand passes
     while (true) {
@@ -21,7 +21,7 @@ Strand.prototype = {
       if (this.endOfStrand()) break;
     }
   },
-  addPoint() {
+  addElement() {
     this.add(new StrandElement(    {
       point: this.currentLine.crossingPoint,
       pr: false,
@@ -53,7 +53,7 @@ Strand.prototype = {
   addNextPoint(strand) {
     this.selectNextPoint();
     this.setNewTargetNode();
-    this.addPoint(strand);
+    this.addElement(strand);
   },
   selectNextPoint() {
     this.currentLine = this.getNextLine(this.direction);

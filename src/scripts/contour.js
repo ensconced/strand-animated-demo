@@ -50,7 +50,7 @@ Contour.prototype = {
   },
   assignOutbound(index, bez) {
     if (knotUtils.linearOrClose(bez)) {
-      this.replaceOutboundWithStraightLine(index);
+      this.replaceOutboundWithStraightLine(index, bez);
     } else {
       this.points[index].outbound = bez;
     }

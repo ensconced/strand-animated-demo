@@ -1,140 +1,139 @@
 import knotUtils from './knot-utils.js';
 import StrandElement from './strand-element.js';
 
-export default function Strand(frame) {
-  this.frame = frame;
-  this.length = 0;
-  this.points = [];
-  this.addAllElements();
+const strandState = {};
+
+function addAllElements(frame) {
+  strandState.frame = frame;
+  strandState.currentLine = frame.firstUncrossedLine();
+  strandState.direction = initialDirection();
+  strandState.targetNode = initialTargetNode();
+  addElement.call(this, frame);
+
+  while (true) {
+    strandState.currentLine = nextLine();
+    strandState.direction = oppositeDirection();
+    strandState.targetNode = nextTargetNode();
+    addNextPoint.call(this);
+    if (endOfStrand()) break;
+  }
+}
+function addElement() {
+  add.call(this, new StrandElement({
+    direction: strandState.direction,
+    point: strandState.currentLine.crossingPoint,
+    pr: false,
+  }));
+
+  if (pointedReturn(strandState.frame)) {
+    var startCoords = strandState.currentLine.crossingPoint.coords;
+    var endCoords = nextLine(strandState.frame).crossingPoint.coords;
+    var prCoords = getApexCoords(startCoords, endCoords);
+    add.call(this, {
+      point: {},
+      x: prCoords[0],
+      y: prCoords[1],
+      pr: oppositeDirection(),
+    });
+  }
+  logCrossing();
+}
+function currentBearing() {
+  return strandState.currentLine.angleOutCP({
+    direction: strandState.direction,
+    reverse: goingBackwards(),
+  });
+}
+function oppositeDirection() {
+  return strandState.direction === 'R' ? 'L' : 'R';
+}
+function addNextPoint(frame) {
+  addElement.call(this, frame);
+}
+function logCrossing() {
+  if (strandState.direction === 'R') {
+    strandState.currentLine.crossingPoint.crossedRight = true;
+  } else {
+    strandState.currentLine.crossingPoint.crossedLeft = true;
+  }
+}
+function traverseNextBackwards(frame) {
+  return nextLine(frame).endNode.sameNode(strandState.targetNode);
+}
+function compareByAngle(lineA, lineB) {
+  if (lineA.angleOutFrom(strandState.targetNode) < lineB.angleOutFrom(strandState.targetNode)) {
+    return -1;
+  } else {
+    return 1;
+  }
+}
+function nextTargetNode() {
+  if (goingBackwards()) {
+    return strandState.currentLine.endNode;
+  } else {
+    return strandState.currentLine.startNode;
+  }
+}
+function endOfStrand() {
+  return nextLine(strandState.frame).crossingPoint.crossed(oppositeDirection());
+}
+function getApexCoords(startPoint, endPoint) {
+  var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
+  var normal;
+  if (strandState.direction === 'R') {
+    normal = [-startToEnd[1], startToEnd[0]];
+  } else if (strandState.direction === 'L') {
+    normal = [startToEnd[1], -startToEnd[0]];
+  }
+  return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
+}
+function nextLine() {
+  const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
+  var orderedLinesOut = roundabout.slice().sort(compareByAngle);
+  var inIndex = orderedLinesOut.indexOf(strandState.currentLine);
+
+  if (strandState.direction === 'R') {
+    // pad out list with first element...
+    // to allow going all way thru to start again
+    var previousLine = orderedLinesOut[inIndex - 1];
+    var lastLine = orderedLinesOut[orderedLinesOut.length - 1];
+    return previousLine || lastLine;
+  } else {
+    orderedLinesOut.push(orderedLinesOut[0]);
+    return orderedLinesOut[inIndex + 1];
+  }
+}
+function nextBearing() {
+  return nextLine(strandState.frame).angleOutCP({
+    direction: oppositeDirection(),
+    reverse: traverseNextBackwards(strandState.frame),
+  });
+}
+function goingBackwards() {
+  return strandState.currentLine.startNode.sameNode(strandState.targetNode);
+}
+function pointedReturn() {
+  var angleDelta = Math.abs(currentBearing() - nextBearing(strandState.frame));
+  var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
+  return smallerAngle > 1.6;
+}
+function initialDirection() {
+  return strandState.currentLine.crossingPoint.uncrossedDirection();
+}
+function initialTargetNode() {
+  return strandState.currentLine.endNode;
+}
+function add(point) {
+  this.points.push(point);
 }
 
-Strand.prototype = {
+export default function Strand(frame) {
+  this.points = [];
+  addAllElements.call(this, frame);
+}
+
+Strand.prototype =  {
   constructor: Strand,
-  addAllElements() {
-    this.currentLine = this.frame.firstUncrossedLine();
-    this.selectDirection();
-    this.addElement();
-    // in the below while loop we add all the
-    // crossingpoints through which our strand passes
-    while (true) {
-      this.addNextPoint();
-      if (this.endOfStrand()) break;
-    }
-  },
-  addElement() {
-    this.add(new StrandElement(    {
-      point: this.currentLine.crossingPoint,
-      pr: false,
-      direction: this.direction,
-    }));
-
-    if (this.pointedReturn()) {
-      var startCoords = this.currentLine.crossingPoint.coords;
-      var endCoords = this.getNextLine(this.direction).crossingPoint.coords;
-      var prCoords = this.getApexCoords(startCoords, endCoords, this.direction);
-      this.add({
-        point: {},
-        x: prCoords[0],
-        y: prCoords[1],
-        pr: this.oppositeDirection(),
-      });
-    }
-    this.logCrossing(this.direction);
-  },
-  currentBearing() {
-    return this.currentLine.angleOutCP({
-      direction: this.direction,
-      reverse: this.goingBackwards(),
-    });
-  },
-  oppositeDirection() {
-    return this.direction === 'R' ? 'L' : 'R';
-  },
-  addNextPoint(strand) {
-    this.selectNextPoint();
-    this.setNewTargetNode();
-    this.addElement(strand);
-  },
-  selectNextPoint() {
-    this.currentLine = this.getNextLine(this.direction);
-    this.direction = this.oppositeDirection();
-  },
-  logCrossing(direction) {
-    if (direction === 'R') {
-      this.currentLine.crossingPoint.crossedRight = true;
-    } else {
-      this.currentLine.crossingPoint.crossedLeft = true;
-    }
-  },
-  traverseNextBackwards() {
-    return this.getNextLine(this.direction).endNode.sameNode(this.targetNode);
-  },
-  compareByAngle(lineA, lineB) {
-    if (lineA.angleOutFrom(this.targetNode) < lineB.angleOutFrom(this.targetNode)) {
-      return -1;
-    } else {
-      return 1;
-    }
-  },
-  setNewTargetNode() {
-    // set new targetNode
-    if (this.goingBackwards()) {
-      this.targetNode = this.currentLine.endNode;
-    } else {
-      this.targetNode = this.currentLine.startNode;
-    }
-  },
-  endOfStrand() {
-    return this.getNextLine(this.direction).crossingPoint.crossed(this.oppositeDirection());
-  },
-  getApexCoords(startPoint, endPoint, direction) {
-    var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
-    var normal;
-    if (direction === 'R') {
-      normal = [-startToEnd[1], startToEnd[0]];
-    } else if (direction === 'L') {
-      normal = [startToEnd[1], -startToEnd[0]];
-    }
-    return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
-  },
-  getNextLine(direction) {
-    this.roundabout = this.frame.linesOutFrom(this.targetNode);
-    var orderedLinesOut = this.roundabout.slice().sort(this.compareByAngle.bind(this));
-    var inIndex = orderedLinesOut.indexOf(this.currentLine);
-
-    if (direction === 'R') {
-      // pad out list with first element...
-      // to allow going all way thru to start again
-      var previousLine = orderedLinesOut[inIndex - 1];
-      var lastLine = orderedLinesOut[orderedLinesOut.length - 1];
-      return previousLine || lastLine;
-    } else {
-      orderedLinesOut.push(orderedLinesOut[0]);
-      return orderedLinesOut[inIndex + 1];
-    }
-  },
-  nextBearing() {
-    return this.getNextLine(this.direction).angleOutCP({
-      direction: this.oppositeDirection(),
-      reverse: this.traverseNextBackwards(),
-    });
-  },
-  goingBackwards() {
-    return this.currentLine.startNode.sameNode(this.targetNode);
-  },
-  pointedReturn() {
-    var angleDelta = Math.abs(this.currentBearing() - this.nextBearing());
-    var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
-    return smallerAngle > 1.6;
-  },
-  selectDirection() {
-    this.direction = this.currentLine.crossingPoint.uncrossedDirection();
-    this.targetNode = this.currentLine.endNode;
-  },
-  add(point) {
-    this.points.push(point);
-    this.length++;
-  },
   trimUnders() {
     for (var cpORpr of this.points) {
       var point = cpORpr.point;

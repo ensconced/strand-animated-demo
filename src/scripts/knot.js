@@ -44,10 +44,10 @@ Knot.prototype = {
   },
   draw() {
     this.strands.forEach(strand => {
-      for (var i = 0; i < strand.length; i++) {
+      for (var i = 0; i < strand.points.length; i++) {
         var cpORpr = strand.points[i];
         // now draw everything except PRs
-        if (!(cpORpr.pr || strand.points[knotUtils.nextCyclicalIdx(strand, i)].pr)) {
+        if (!(cpORpr.pr || strand.points[knotUtils.nextCyclicalIdx(strand.points, i)].pr)) {
           var point = cpORpr.point;
           if (cpORpr.direction === 'R') {
             this.drawOutline(point.overOutLeft);

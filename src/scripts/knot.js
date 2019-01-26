@@ -92,18 +92,16 @@ Knot.prototype = {
     }
   },
   generateOffsets() {
-    for (var strand of this.strands) {
+    this.strands.forEach(function (strand) {
       var c = new Contour(strand.points);
       c.assignOffsets();
-    }
+    });
   },
   trimUnders() {
-    for (var strand of this.strands) {
-      strand.trimUnders();
-    }
+    this.strands.forEach(strand => strand.trimUnders());
   },
   draw() {
-    for (var strand of this.strands) {
+    this.strands.forEach(strand => {
       for (var i = 0; i < strand.length; i++) {
         var cpORpr = strand.points[i];
         // now draw everything except PRs
@@ -127,7 +125,7 @@ Knot.prototype = {
           pr.draw();
         }
       }
-    }
+    });
   },
   drawOutline(outline) {
     var points = outline.reduce(knotUtils.reducer, []);

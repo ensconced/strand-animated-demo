@@ -13,7 +13,7 @@ export default function Knot(frame) {
   this.remove = function() {
     this.group.remove();
   };
-  this.generateStrands();
+  this.generateAllStrands();
   this.generateOffsets();
   this.trimUnders();
   this.draw();
@@ -67,22 +67,28 @@ Knot.prototype = {
   endOfStrand() {
     return this.getNextLine(this.direction).crossingPoint.crossed(this.oppositeDirection());
   },
-  generateStrands() {
-    while (this.frame.lines.some(this.uncrossed)) {
-      var strand = new Strand();
-      this.currentLine = this.firstUncrossedLine();
-      this.selectDirection();
-      this.addPoint(strand);
+  generateStrand() {
+    var strand = new Strand();
+    this.currentLine = this.firstUncrossedLine();
+    this.selectDirection();
+    this.addPoint(strand);
 
-      // in the below while loop we add all the
-      // crossingpoints through which our strand passes
-      while (true) {
-        this.selectNextPoint();
-        this.setNewTargetNode();
-        this.addPoint(strand);
-        if (this.endOfStrand()) break;
-      }
-      this.strands.push(strand);
+    // in the below while loop we add all the
+    // crossingpoints through which our strand passes
+    while (true) {
+      this.addNextPoint(strand);
+      if (this.endOfStrand()) break;
+    }
+    this.strands.push(strand);
+  },
+  addNextPoint(strand) {
+    this.selectNextPoint();
+    this.setNewTargetNode();
+    this.addPoint(strand);
+  },
+  generateAllStrands() {
+    while (this.frame.lines.some(this.uncrossed)) {
+      this.generateStrand();
     }
   },
   generateOffsets() {

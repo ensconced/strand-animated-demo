@@ -24,8 +24,8 @@ export default function Knot(frame) {
 
 Knot.prototype = {
   constructor: Knot,
-  selectLine() {
-    this.currentLine = this.frame.lines.find(this.uncrossed);
+  firstUncrossedLine() {
+    return this.frame.lines.find(this.uncrossed);
   },
   selectDirection() {
     this.direction = this.currentLine.crossingPoint.uncrossedDirection();
@@ -69,11 +69,8 @@ Knot.prototype = {
   },
   generateStrands() {
     while (this.frame.lines.some(this.uncrossed)) {
-      // on each iteration of this loop we determine...
-      // the crossingpoints through which a single strand will pass
       var strand = new Strand();
-
-      this.selectLine();
+      this.currentLine = this.firstUncrossedLine();
       this.selectDirection();
       this.addPoint(strand);
 

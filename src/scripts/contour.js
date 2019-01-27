@@ -17,11 +17,10 @@ export default function Contour(strand) {
   this.strand.forEach((point, index) => {
     const polygon = this.getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
-    const bez = this.bezier(polygon);
+    point.outboundBezier = this.bezier(polygon);
 
-    // adding properties to points...
-    this.assignOutboundBezes(index, bez);
-    this.assignOutbound(index, bez);
+    this.assignOutboundBezes(index);
+    this.assignOutbound(index);
   });
 }
 
@@ -50,11 +49,10 @@ Contour.prototype = {
     ]);
     return bezPoints;
   },
-  assignOutbound(index, bez) {
-    if (knotUtils.linearOrClose(bez)) {
-      this.replaceOutboundWithStraightLine(index, bez);
-    } else {
-      this.strand[index].outbound = bez;
+  assignOutbound(index) {
+    const point = this.strand[index];
+    if (knotUtils.linearOrClose(point.outboundBezier)) {
+      this.replaceOutboundWithStraightLine(index);
     }
   },
   replaceOutboundWithStraightLine(index, bez) {
@@ -64,9 +62,7 @@ Contour.prototype = {
   },
   assignOutboundBezes(index, bez) {
     const point = this.strand[index];
-    if (point.pr) {
-      //strand[index].point.out = bez;
-    } else {
+    if (!point.pr) {
       if (point.direction === 'R') {
         point.point.overOut = bez;
       } else if (point.direction === 'L') {
@@ -84,52 +80,69 @@ Contour.prototype = {
       }
     });
   },
+  polyLineOffset(bezier, offset) {
+    const polyBezier = bezier.offset(offset);
+    return knotUtils.polyline(knotUtils.removeStubs(polyBezier));
+  },
+  createOffsets(point) {
+    const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
+    point.left = this.polyLineOffset(point.outboundBezier, -offset);
+    point.right = this.polyLineOffset(point.outboundBezier, offset);
+  },
+  leftPR(point) {
+    point.point.innerInbound = point.left;
+    point.point.outerInbound = point.right;
+  },
+  rightPR(point) {
+    point.point.innerInbound = point.right;
+    point.point.outerInbound = point.left;
+  },
+  labelPointedReturnOffsets(point, next, previous) {
+    if (point.pr === 'L') {
+      this.leftPR(point);
+    } else if (point.pr === 'R') {
+      this.rightPR(point);
+    }
+    if (previous.direction === 'R') {
+      next.point.underInLeft = point.left;
+      next.point.underInRight = point.right;
+    } else if (previous.direction === 'L') {
+      next.point.overInLeft = point.left;
+      next.point.overInRight = point.right;
+    }
+  },
+  labelOffsets(point, next) {
+    if (point.direction === 'R') {
+      point.point.overOutLeft = point.left;
+      point.point.overOutRight = point.right;
+      if (!next.pr) {
+        next.point.underInLeft = point.left;
+        next.point.underInRight = point.right;
+      } else {
+        next.point.innerOutbound = point.left;
+        next.point.outerOutbound = point.right;
+      }
+    } else if (point.direction === 'L') {
+      point.point.underOutLeft = point.left;
+      point.point.underOutRight = point.right;
+      if (!next.pr) {
+        next.point.overInLeft = point.left;
+        next.point.overInRight = point.right;
+      } else {
+        next.point.innerOutbound = point.right;
+        next.point.outerOutbound = point.left;
+      }
+    }
+  },
   assignOffsets() {
     this.strand.forEach((point, index) => {
-      var left = point.outbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth) / 2);
-      var right = point.outbound.offset((config.knot.strokeWidth + config.knot.borderWidth) / 2);
-      left = knotUtils.polyline(knotUtils.removeStubs(left));
-      right = knotUtils.polyline(knotUtils.removeStubs(right));
-      var next = pointFollowing(index, this.strand);
-      var previous = pointPreceding(index, this.strand);
-
+      this.createOffsets(point);
+      const next = pointFollowing(index, this.strand);
       if (point.pr) {
-        if (point.pr === 'L') {
-          point.point.innerInbound = left;
-          point.point.outerInbound = right;
-        } else if (point.pr === 'R') {
-          point.point.innerInbound = right;
-          point.point.outerInbound = left;
-        }
-        if (previous.direction === 'R') {
-          next.point.underInLeft = left;
-          next.point.underInRight = right;
-        } else if (previous.direction === 'L') {
-          next.point.overInLeft = left;
-          next.point.overInRight = right;
-        }
+        const previous = pointPreceding(index, this.strand);
+        this.labelPointedReturnOffsets(point, next, previous);
       } else {
-        if (point.direction === 'R') {
-          point.point.overOutLeft = left;
-          point.point.overOutRight = right;
-          if (!next.pr) {
-            next.point.underInLeft = left;
-            next.point.underInRight = right;
-          } else {
-            next.point.innerOutbound = left;
-            next.point.outerOutbound = right;
-          }
-        } else if (point.direction === 'L') {
-          point.point.underOutLeft = left;
-          point.point.underOutRight = right;
-          if (!next.pr) {
-            next.point.overInLeft = left;
-            next.point.overInRight = right;
-          } else {
-            next.point.innerOutbound = right;
-            next.point.outerOutbound = left;
-          }
-        }
+        this.labelOffsets(point, next);
       }
     });
   },

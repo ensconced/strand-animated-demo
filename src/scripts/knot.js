@@ -94,8 +94,8 @@ Knot.prototype = {
           var pr = new PointedReturn({
             pr: strandElement,
             group: this.group,
-            middleOutbound: pointPreceding(i, strand).outbound,
-            middleInbound: strandElement.outbound,
+            middleOutbound: pointPreceding(i, strand).outboundBezier,
+            middleInbound: strandElement.outboundBezier,
           });
           pr.draw();
         }

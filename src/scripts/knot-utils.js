@@ -122,6 +122,7 @@ export default (function () {
     return collection;
   }
 
+  // a stub curve goes nowhere - it's too short to bother with
   function stub(curve) {
     var startPoint;
     if (curve.constructor.name === 'StraightLine') {

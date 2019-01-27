@@ -43,22 +43,6 @@ export default (function () {
     return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${p3[1]}`;
   }
 
-  function nextCyclicalIdx(arr, i) {
-    if (i === arr.length - 1) {
-      return 0;
-    } else {
-      return i + 1;
-    }
-  }
-
-  function previousCyclicalIdx(arr, i) {
-    if (i === 0) {
-      return arr.length - 1;
-    } else {
-      return i - 1;
-    }
-  }
-
   function format(snapObj) {
     snapObj.attr({
       stroke: 'black',
@@ -173,8 +157,6 @@ export default (function () {
     removeStubs: removeStubs,
     linearOrClose: linearOrClose,
     format: format,
-    nextCyclicalIdx: nextCyclicalIdx,
-    previousCyclicalIdx: previousCyclicalIdx,
     collectionIntersect: collectionIntersect,
     bezString: bezString,
   };

@@ -4,8 +4,8 @@ import numeric from 'numeric';
 import Bezier from 'bezier-js';
 import StraightLine from './straight-line.js';
 
-export default function Contour(points) {
-  this.points = points;
+export default function Contour(strand) {
+  this.strand = strand;
   this.theta = 1.5;
   this.matrix = [];
   this.equals = [];
@@ -13,7 +13,7 @@ export default function Contour(points) {
 
   const polygons = [];
 
-  for (var index = 0; index < this.points.length; index++) {
+  this.strand.eachElement((point, index) => {
     const polygon = this.getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
     const bez = this.bezier(polygon);
@@ -21,7 +21,7 @@ export default function Contour(points) {
     // adding properties to points...
     this.assignOutboundBezes(index, bez);
     this.assignOutbound(index, bez);
-  }
+  });
 }
 
 Contour.prototype = {
@@ -39,12 +39,13 @@ Contour.prototype = {
   },
   getBezier(index, xCntrlPoints, yCntrlPoints) {
     var bezPoints = [];
-    bezPoints.push([this.points[index].x, this.points[index].y]);
+    bezPoints.push([this.strand.get(index).x, this.strand.get(index).y]);
     bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
     bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
+    const nextPoint = this.strand.pointFollowing(index);
     bezPoints.push([
-      this.points[knotUtils.nextCyclicalIdx(this.points, index)].x,
-      this.points[knotUtils.nextCyclicalIdx(this.points, index)].y,
+      nextPoint.x,
+      nextPoint.y,
     ]);
     return bezPoints;
   },
@@ -52,7 +53,7 @@ Contour.prototype = {
     if (knotUtils.linearOrClose(bez)) {
       this.replaceOutboundWithStraightLine(index, bez);
     } else {
-      this.points[index].outbound = bez;
+      this.strand.get(index).outbound = bez;
     }
   },
   replaceOutboundWithStraightLine(index, bez) {
@@ -61,53 +62,55 @@ Contour.prototype = {
     this.points[index].outbound = new StraightLine(start, end);
   },
   assignOutboundBezes(index, bez) {
-    if (this.points[index].pr) {
+    const point = this.strand.get(index);
+    if (point.pr) {
       //strand[index].point.out = bez;
     } else {
-      if (this.points[index].direction === 'R') {
-        this.points[index].point.overOut = bez;
-      } else if (this.points[index].direction === 'L') {
-        this.points[index].point.underOut = bez;
+      if (point.direction === 'R') {
+        point.point.overOut = bez;
+      } else if (point.direction === 'L') {
+        point.point.underOut = bez;
       }
     }
   },
   constructMatrix() {
-    for (var j = 0; j < this.points.length; j++) {
-      this.setC2continuity(j);
-      if (this.points[j].pr) {
-        this.setPRangle(j);
+    this.strand.eachIndex(index => {
+      this.setC2continuity(index);
+      if (this.strand.get(index).pr) {
+        this.setPRangle(index);
       } else {
-        this.setC1continuity(j);
+        this.setC1continuity(index);
       }
-    }
+    });
   },
   assignOffsets() {
-    for (var i = 0; i < this.points.length; i++) {
-      var left = this.points[i].outbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth) / 2);
-      var right = this.points[i].outbound.offset((config.knot.strokeWidth + config.knot.borderWidth) / 2);
+    this.strand.eachElement((point, index) => {
+      var left = point.outbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth) / 2);
+      var right = point.outbound.offset((config.knot.strokeWidth + config.knot.borderWidth) / 2);
       left = knotUtils.polyline(knotUtils.removeStubs(left));
       right = knotUtils.polyline(knotUtils.removeStubs(right));
-      var next = this.points[knotUtils.nextCyclicalIdx(this.points, i)];
+      var next = this.strand.pointFollowing(index);
+      var previous = this.strand.pointPreceding(index);
 
-      if (this.points[i].pr) {
-        if (this.points[i].pr === 'L') {
-          this.points[i].point.innerInbound = left;
-          this.points[i].point.outerInbound = right;
-        } else if (this.points[i].pr === 'R') {
-          this.points[i].point.innerInbound = right;
-          this.points[i].point.outerInbound = left;
+      if (point.pr) {
+        if (point.pr === 'L') {
+          point.point.innerInbound = left;
+          point.point.outerInbound = right;
+        } else if (point.pr === 'R') {
+          point.point.innerInbound = right;
+          point.point.outerInbound = left;
         }
-        if (this.points[knotUtils.previousCyclicalIdx(this.points, i)].direction === 'R') {
+        if (previous.direction === 'R') {
           next.point.underInLeft = left;
           next.point.underInRight = right;
-        } else if (this.points[knotUtils.previousCyclicalIdx(this.points, i)].direction === 'L') {
+        } else if (previous.direction === 'L') {
           next.point.overInLeft = left;
           next.point.overInRight = right;
         }
       } else {
-        if (this.points[i].direction === 'R') {
-          this.points[i].point.overOutLeft = left;
-          this.points[i].point.overOutRight = right;
+        if (point.direction === 'R') {
+          point.point.overOutLeft = left;
+          point.point.overOutRight = right;
           if (!next.pr) {
             next.point.underInLeft = left;
             next.point.underInRight = right;
@@ -115,9 +118,9 @@ Contour.prototype = {
             next.point.innerOutbound = left;
             next.point.outerOutbound = right;
           }
-        } else if (this.points[i].direction === 'L') {
-          this.points[i].point.underOutLeft = left;
-          this.points[i].point.underOutRight = right;
+        } else if (point.direction === 'L') {
+          point.point.underOutLeft = left;
+          point.point.underOutRight = right;
           if (!next.pr) {
             next.point.overInLeft = left;
             next.point.overInRight = right;
@@ -127,11 +130,11 @@ Contour.prototype = {
           }
         }
       }
-    }
+    });
   },
   emptyRow() {
     var row = [];
-    this.points.forEach(function () {
+    this.strand.eachElement(function () {
       row = row.concat([0, 0]);
     });
     return row;
@@ -154,8 +157,8 @@ Contour.prototype = {
     var row = this.condition(2 * i - 1, [1, 1]);
     this.matrix.push(row.concat(this.emptyRow()));
     this.matrix.push(this.emptyRow().concat(row));
-    this.equals.push(2 * this.points[i].x);
-    this.equals.push(2 * this.points[i].y);
+    this.equals.push(2 * this.strand.get(i).x);
+    this.equals.push(2 * this.strand.get(i).y);
   },
   setC2continuity(i) {
     var row = this.condition(2 * i, [1, -2, 2, -1]);
@@ -165,10 +168,11 @@ Contour.prototype = {
     this.equals.push(0);
   },
   setPRangle(i) {
+    const point = this.strand.get(i);
     var angle;
-    if (this.points[i].pr === 'R') {
+    if (point.pr === 'R') {
       angle = this.theta;
-    } else if (this.points[i].pr === 'L') {
+    } else if (point.pr === 'L') {
       angle = 2 * Math.PI - this.theta;
     }
     var row1 = this.condition(2 * i - 1, [1, -Math.cos(angle)]);
@@ -176,8 +180,8 @@ Contour.prototype = {
     var row3 = this.condition(2 * i, [-Math.sin(angle)]);
     this.matrix.push(row1.concat(row2));
     this.matrix.push(row3.concat(row1));
-    this.equals.push((1 - Math.cos(angle)) * this.points[i].x + Math.sin(angle) * this.points[i].y),
-    this.equals.push((1 - Math.cos(angle)) * this.points[i].y - Math.sin(angle) * this.points[i].x);
+    this.equals.push((1 - Math.cos(angle)) * point.x + Math.sin(angle) * point.y),
+    this.equals.push((1 - Math.cos(angle)) * point.y - Math.sin(angle) * point.x);
   },
   getPRandDirection(strand, index) {
     var pr;

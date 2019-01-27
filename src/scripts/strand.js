@@ -134,6 +134,34 @@ export default function Strand(frame) {
 
 Strand.prototype =  {
   constructor: Strand,
+  eachElement: function (callback) {
+    this.points.forEach(callback);
+  },
+  eachIndex: function (callback) {
+    this.points.forEach(function (_, index) {
+      callback(index);
+    });
+  },
+  get(int) {
+    return this.points[int];
+  },
+  get length() {
+    return this.points.length;
+  },
+  pointFollowing(index) {
+    if (index === this.points.length - 1) {
+      return this.points[0];
+    } else {
+      return this.points[index + 1];
+    }
+  },
+  pointPreceding(index) {
+    if (index === 0) {
+      return this.points[this.points.length - 1];
+    } else {
+      return this.points[index - 1];
+    }
+  },
   trimUnders() {
     for (var cpORpr of this.points) {
       var point = cpORpr.point;

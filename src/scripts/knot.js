@@ -35,7 +35,7 @@ Knot.prototype = {
   },
   generateOffsets() {
     this.strands.forEach(function (strand) {
-      var c = new Contour(strand.points);
+      var c = new Contour(strand);
       c.assignOffsets();
     });
   },
@@ -44,29 +44,28 @@ Knot.prototype = {
   },
   draw() {
     this.strands.forEach(strand => {
-      for (var i = 0; i < strand.points.length; i++) {
-        var cpORpr = strand.points[i];
+      strand.eachElement((strandElement, i) => {
         // now draw everything except PRs
-        if (!(cpORpr.pr || strand.points[knotUtils.nextCyclicalIdx(strand.points, i)].pr)) {
-          var point = cpORpr.point;
-          if (cpORpr.direction === 'R') {
+        if (!(strandElement.pr || strand.pointFollowing(i).pr)) {
+          var point = strandElement.point;
+          if (strandElement.direction === 'R') {
             this.drawOutline(point.overOutLeft);
             this.drawOutline(point.overOutRight);
           } else {
             this.drawOutline(point.underOutLeft);
             this.drawOutline(point.underOutRight);
           }
-        } else if (cpORpr.pr) {
+        } else if (strandElement.pr) {
           // here we draw the PRs
           var pr = new PointedReturn({
-            pr: cpORpr,
+            pr: strandElement,
             group: this.group,
-            middleOutbound: strand.points[knotUtils.previousCyclicalIdx(strand, i)].outbound,
-            middleInbound: cpORpr.outbound,
+            middleOutbound: strand.pointPreceding(i).outbound,
+            middleInbound: strandElement.outbound,
           });
           pr.draw();
         }
-      }
+      });
     });
   },
   drawOutline(outline) {

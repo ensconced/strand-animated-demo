@@ -1,4 +1,3 @@
-import knotUtils from './knot-utils.js';
 import StrandElement from './strand-element.js';
 
 const strandState = {};
@@ -124,79 +123,18 @@ function initialTargetNode() {
   return strandState.currentLine.endNode;
 }
 function add(point) {
-  this.points.push(point);
+  this.push(point);
 }
 
-export default function Strand(frame) {
-  this.points = [];
-  addAllElements.call(this, frame);
+export function Strand(frame) {
+  const result = [];
+  addAllElements.call(result, frame);
+  return result;
+}
+export function pointFollowing(index, strand) {
+  return strand[(index + 1) % strand.length];
 }
 
-Strand.prototype =  {
-  constructor: Strand,
-  eachElement: function (callback) {
-    this.points.forEach(callback);
-  },
-  eachIndex: function (callback) {
-    this.points.forEach(function (_, index) {
-      callback(index);
-    });
-  },
-  get(int) {
-    return this.points[int];
-  },
-  get length() {
-    return this.points.length;
-  },
-  pointFollowing(index) {
-    if (index === this.points.length - 1) {
-      return this.points[0];
-    } else {
-      return this.points[index + 1];
-    }
-  },
-  pointPreceding(index) {
-    if (index === 0) {
-      return this.points[this.points.length - 1];
-    } else {
-      return this.points[index - 1];
-    }
-  },
-  trimUnders() {
-    for (var cpORpr of this.points) {
-      var point = cpORpr.point;
-      if (!cpORpr.pr) {
-        // now trim the unders
-        if (!cpORpr.point.trimmed) {
-          // i.e. if not already trimmed
-          var overLeft = point.overInLeft.concat(point.overOutLeft);
-          var overRight = point.overInRight.concat(point.overOutRight);
-          var intersectLOut =
-            knotUtils.collectionIntersect(point.underOutLeft, overLeft) ||
-            knotUtils.collectionIntersect(point.underOutLeft, overRight);
-          var intersectROut =
-            knotUtils.collectionIntersect(point.underOutRight, overLeft) ||
-            knotUtils.collectionIntersect(point.underOutRight, overRight);
-          var intersectLIn =
-            knotUtils.collectionIntersect(point.underInLeft, overLeft) ||
-            knotUtils.collectionIntersect(point.underInLeft, overRight);
-          var intersectRIn =
-            knotUtils.collectionIntersect(point.underInRight, overLeft) ||
-            knotUtils.collectionIntersect(point.underInRight, overRight);
-
-          knotUtils.mutate(point.underOutLeft, point.underOutLeft.slice(intersectLOut.idxA + 1));
-          knotUtils.mutate(point.underOutRight, point.underOutRight.slice(intersectROut.idxA + 1));
-          knotUtils.mutate(point.underInLeft, point.underInLeft.slice(0, intersectLIn.idxA + 1));
-          knotUtils.mutate(point.underInRight, point.underInRight.slice(0, intersectRIn.idxA + 1));
-
-          point.underOutLeft.unshift(intersectLOut.intersection);
-          point.underOutRight.unshift(intersectROut.intersection);
-          point.underInLeft.push(intersectLIn.intersection);
-          point.underInRight.push(intersectRIn.intersection);
-        }
-
-        cpORpr.point.trimmed = true;
-      }
-    }
-  },
-};
+export function pointPreceding(index, strand) {
+  return strand[index - 1] || strand[strand.length - 1];
+}

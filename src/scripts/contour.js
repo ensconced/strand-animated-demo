@@ -3,6 +3,7 @@ import knotUtils from './knot-utils.js';
 import numeric from 'numeric';
 import Bezier from 'bezier-js';
 import StraightLine from './straight-line.js';
+import { pointFollowing, pointPreceding } from './strand.js';
 
 export default function Contour(strand) {
   this.strand = strand;
@@ -13,7 +14,7 @@ export default function Contour(strand) {
 
   const polygons = [];
 
-  this.strand.eachElement((point, index) => {
+  this.strand.forEach((point, index) => {
     const polygon = this.getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
     const bez = this.bezier(polygon);
@@ -39,10 +40,10 @@ Contour.prototype = {
   },
   getBezier(index, xCntrlPoints, yCntrlPoints) {
     var bezPoints = [];
-    bezPoints.push([this.strand.get(index).x, this.strand.get(index).y]);
+    bezPoints.push([this.strand[index].x, this.strand[index].y]);
     bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
     bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
-    const nextPoint = this.strand.pointFollowing(index);
+    const nextPoint = pointFollowing(index, this.strand);
     bezPoints.push([
       nextPoint.x,
       nextPoint.y,
@@ -53,7 +54,7 @@ Contour.prototype = {
     if (knotUtils.linearOrClose(bez)) {
       this.replaceOutboundWithStraightLine(index, bez);
     } else {
-      this.strand.get(index).outbound = bez;
+      this.strand[index].outbound = bez;
     }
   },
   replaceOutboundWithStraightLine(index, bez) {
@@ -62,7 +63,7 @@ Contour.prototype = {
     this.points[index].outbound = new StraightLine(start, end);
   },
   assignOutboundBezes(index, bez) {
-    const point = this.strand.get(index);
+    const point = this.strand[index];
     if (point.pr) {
       //strand[index].point.out = bez;
     } else {
@@ -74,9 +75,9 @@ Contour.prototype = {
     }
   },
   constructMatrix() {
-    this.strand.eachIndex(index => {
+    this.strand.forEach((point, index) => {
       this.setC2continuity(index);
-      if (this.strand.get(index).pr) {
+      if (this.strand[index].pr) {
         this.setPRangle(index);
       } else {
         this.setC1continuity(index);
@@ -84,13 +85,13 @@ Contour.prototype = {
     });
   },
   assignOffsets() {
-    this.strand.eachElement((point, index) => {
+    this.strand.forEach((point, index) => {
       var left = point.outbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth) / 2);
       var right = point.outbound.offset((config.knot.strokeWidth + config.knot.borderWidth) / 2);
       left = knotUtils.polyline(knotUtils.removeStubs(left));
       right = knotUtils.polyline(knotUtils.removeStubs(right));
-      var next = this.strand.pointFollowing(index);
-      var previous = this.strand.pointPreceding(index);
+      var next = pointFollowing(index, this.strand);
+      var previous = pointPreceding(index, this.strand);
 
       if (point.pr) {
         if (point.pr === 'L') {
@@ -134,7 +135,7 @@ Contour.prototype = {
   },
   emptyRow() {
     var row = [];
-    this.strand.eachElement(function () {
+    this.strand.forEach(function () {
       row = row.concat([0, 0]);
     });
     return row;
@@ -157,8 +158,8 @@ Contour.prototype = {
     var row = this.condition(2 * i - 1, [1, 1]);
     this.matrix.push(row.concat(this.emptyRow()));
     this.matrix.push(this.emptyRow().concat(row));
-    this.equals.push(2 * this.strand.get(i).x);
-    this.equals.push(2 * this.strand.get(i).y);
+    this.equals.push(2 * this.strand[i].x);
+    this.equals.push(2 * this.strand[i].y);
   },
   setC2continuity(i) {
     var row = this.condition(2 * i, [1, -2, 2, -1]);
@@ -168,7 +169,7 @@ Contour.prototype = {
     this.equals.push(0);
   },
   setPRangle(i) {
-    const point = this.strand.get(i);
+    const point = this.strand[i];
     var angle;
     if (point.pr === 'R') {
       angle = this.theta;
@@ -182,20 +183,5 @@ Contour.prototype = {
     this.matrix.push(row3.concat(row1));
     this.equals.push((1 - Math.cos(angle)) * point.x + Math.sin(angle) * point.y),
     this.equals.push((1 - Math.cos(angle)) * point.y - Math.sin(angle) * point.x);
-  },
-  getPRandDirection(strand, index) {
-    var pr;
-    var direction;
-    if (strand[index].pr) {
-      pr = 'inbound';
-      direction = strand[index].pr;
-    } else if (strand[knotUtils.nextCyclicalIdx(strand, index)].pr) {
-      pr = 'outbound';
-      direction = strand[knotUtils.nextCyclicalIdx(strand, index)].pr;
-    } else {
-      pr = false;
-      direction = strand[index].direction;
-    }
-    return {pr, direction,};
   },
 };

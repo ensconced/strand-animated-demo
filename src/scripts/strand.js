@@ -134,7 +134,6 @@ export function Strand(frame) {
 export function pointFollowing(index, strand) {
   return strand[(index + 1) % strand.length];
 }
-
 export function pointPreceding(index, strand) {
   return strand[index - 1] || strand[strand.length - 1];
 }

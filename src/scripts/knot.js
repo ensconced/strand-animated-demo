@@ -26,7 +26,6 @@ Knot.prototype = {
   constructor: Knot,
   generateStrand() {
     var strand = Strand(this.frame);
-    debugger;
     this.strands.push(strand);
   },
   generateAllStrands() {

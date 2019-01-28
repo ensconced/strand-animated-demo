@@ -24,13 +24,14 @@ export default function Knot(frame) {
 Knot.prototype = {
   constructor: Knot,
   makeStrands() {
-    this.strands = [];
+    const strands = [];
     while (this.frame.lines.some(line => line.uncrossed())) {
-      this.strands.push(Strand(this.frame));
+      strands.push(Strand(this.frame));
     }
+    return strands;
   },
   generateOffsets() {
-    this.makeStrands();
+    this.strands = this.makeStrands();
     this.contours = this.strands.map(strand => Contour(strand));
     this.offsetSketches = this.contours.map(contour => new OffsetSketch(contour));
   },

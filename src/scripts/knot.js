@@ -3,18 +3,17 @@ import { Strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
 import surface from './main.js';
+import OffsetSketch from './offset-sketch';
 
 export default function Knot(frame) {
   this.group = surface.g();
-  this.strands = [];
-
   this.frame = frame;
 
   this.remove = function() {
     this.group.remove();
   };
-  this.generateAllStrands();
   this.generateOffsets();
+
   this.trimUnders();
   this.draw();
   this.frame.remove();
@@ -24,20 +23,16 @@ export default function Knot(frame) {
 
 Knot.prototype = {
   constructor: Knot,
-  generateStrand() {
-    var strand = Strand(this.frame);
-    this.strands.push(strand);
-  },
-  generateAllStrands() {
+  makeStrands() {
+    this.strands = [];
     while (this.frame.lines.some(line => line.uncrossed())) {
-      this.generateStrand();
+      this.strands.push(Strand(this.frame));
     }
   },
   generateOffsets() {
-    this.strands.forEach(function (strand) {
-      var c = new Contour(strand);
-      c.assignOffsets();
-    });
+    this.makeStrands();
+    this.contours = this.strands.map(strand => Contour(strand));
+    this.offsetSketches = this.contours.map(contour => new OffsetSketch(contour));
   },
   trimUnders() {
     this.strands.forEach(strand => {

@@ -18,7 +18,6 @@ export default function Contour(strand) {
     const polygon = this.getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
     point.outboundBezier = this.bezier(polygon);
-
     this.assignOutbound(index);
   });
 }
@@ -51,13 +50,13 @@ Contour.prototype = {
   assignOutbound(index) {
     const point = this.strand[index];
     if (knotUtils.linearOrClose(point.outboundBezier)) {
-      this.replaceOutboundWithStraightLine(index);
+      this.replaceOutboundWithStraightLine(index, point.outboundBezier);
     }
   },
   replaceOutboundWithStraightLine(index, bez) {
     var start = [bez.points[0].x, bez.points[0].y];
     var end = [bez.points[3].x, bez.points[3].y];
-    this.points[index].outbound = new StraightLine(start, end);
+    this.strand[index].outbound = new StraightLine(start, end);
   },
   constructMatrix() {
     this.strand.forEach((point, index) => {

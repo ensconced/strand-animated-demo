@@ -2,6 +2,18 @@ import StrandElement from './strand-element.js';
 
 const strandState = {};
 
+export function Strand(frame) {
+  const result = [];
+  addAllElements.call(result, frame);
+  return result;
+}
+export function pointFollowing(index, strand) {
+  return strand[(index + 1) % strand.length];
+}
+export function pointPreceding(index, strand) {
+  return strand[index - 1] || strand[strand.length - 1];
+}
+
 function addAllElements(frame) {
   strandState.frame = frame;
   strandState.currentLine = frame.firstUncrossedLine();
@@ -124,16 +136,4 @@ function initialTargetNode() {
 }
 function add(point) {
   this.push(point);
-}
-
-export function Strand(frame) {
-  const result = [];
-  addAllElements.call(result, frame);
-  return result;
-}
-export function pointFollowing(index, strand) {
-  return strand[(index + 1) % strand.length];
-}
-export function pointPreceding(index, strand) {
-  return strand[index - 1] || strand[strand.length - 1];
 }

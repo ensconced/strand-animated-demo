@@ -86,51 +86,63 @@ Contour.prototype = {
   },
   createOffsets(point) {
     const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
-    point.left = this.polyLineOffset(point.outboundBezier, -offset);
-    point.right = this.polyLineOffset(point.outboundBezier, offset);
+    point.leftOutboundOffset = this.polyLineOffset(point.outboundBezier, -offset);
+    point.rightOutboundOffset = this.polyLineOffset(point.outboundBezier, offset);
   },
-  leftPR(point) {
-    point.point.innerInbound = point.left;
-    point.point.outerInbound = point.right;
+  labelInboundOffsetsLeftPR(point) {
+    point.point.innerInbound = point.leftOutboundOffset;
+    point.point.outerInbound = point.rightOutboundOffset;
   },
-  rightPR(point) {
-    point.point.innerInbound = point.right;
-    point.point.outerInbound = point.left;
+  labelInboundOffetsRightPR(point) {
+    point.point.innerInbound = point.rightOutboundOffset;
+    point.point.outerInbound = point.leftOutboundOffset;
+  },
+  labelInboundOffsetsPR(point) {
+    if (point.pr === 'L') {
+      this.labelInboundOffsetsLeftPR(point);
+    } else if (point.pr === 'R') {
+      this.labelInboundOffetsRightPR(point);
+    }
+  },
+  labelInboundsOfPointAfterPR(point, next, previous) {
+    if (previous.direction === 'R') {
+      next.point.underInLeft = point.leftOutboundOffset;
+      next.point.underInRight = point.rightOutboundOffset;
+    } else if (previous.direction === 'L') {
+      next.point.overInLeft = point.leftOutboundOffset;
+      next.point.overInRight = point.rightOutboundOffset;
+    }
   },
   labelPointedReturnOffsets(point, next, previous) {
-    if (point.pr === 'L') {
-      this.leftPR(point);
-    } else if (point.pr === 'R') {
-      this.rightPR(point);
-    }
-    if (previous.direction === 'R') {
-      next.point.underInLeft = point.left;
-      next.point.underInRight = point.right;
-    } else if (previous.direction === 'L') {
-      next.point.overInLeft = point.left;
-      next.point.overInRight = point.right;
-    }
+    this.labelInboundOffsetsPR(point);
+    this.labelInboundsOfPointAfterPR(point, next, previous);
   },
   labelOffsets(point, next) {
     if (point.direction === 'R') {
-      point.point.overOutLeft = point.left;
-      point.point.overOutRight = point.right;
+      point.point.overOutLeft = point.leftOutboundOffset;
+      point.point.overOutRight = point.rightOutboundOffset;
       if (!next.pr) {
-        next.point.underInLeft = point.left;
-        next.point.underInRight = point.right;
+        next.point.underInLeft = point.leftOutboundOffset;
+        next.point.underInRight = point.rightOutboundOffset;
       } else {
-        next.point.innerOutbound = point.left;
-        next.point.outerOutbound = point.right;
+        next.point.innerOutbound = point.leftOutboundOffset;
+        next.point.outerOutbound = point.rightOutboundOffset;
       }
     } else if (point.direction === 'L') {
-      point.point.underOutLeft = point.left;
-      point.point.underOutRight = point.right;
+      point.point.underOutLeft = point.leftOutboundOffset;
+      point.point.underOutRight = point.rightOutboundOffset;
       if (!next.pr) {
-        next.point.overInLeft = point.left;
-        next.point.overInRight = point.right;
+
+
+        next.point.overInLeft = point.leftOutboundOffset;
+        next.point.overInRight = point.rightOutboundOffset;
+
+
       } else {
-        next.point.innerOutbound = point.right;
-        next.point.outerOutbound = point.left;
+        next.point.innerOutbound = point.rightOutboundOffset;
+        next.point.outerOutbound = point.leftOutboundOffset;
+
+
       }
     }
   },

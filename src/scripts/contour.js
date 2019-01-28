@@ -3,7 +3,7 @@ import knotUtils from './knot-utils.js';
 import numeric from 'numeric';
 import Bezier from 'bezier-js';
 import StraightLine from './straight-line.js';
-import { pointFollowing, pointPreceding } from './strand.js';
+import { pointFollowing } from './strand.js';
 
 export default function Contour(strand) {
   this.strand = strand;
@@ -104,18 +104,18 @@ Contour.prototype = {
       this.labelInboundOffetsRightPR(point);
     }
   },
-  labelInboundsOfPointAfterPR(point, next, previous) {
-    if (previous.direction === 'R') {
+  labelInboundsOfPointAfterPR(point, next) {
+    if (point.pr === 'L') {
       next.point.underInLeft = point.leftOutboundOffset;
       next.point.underInRight = point.rightOutboundOffset;
-    } else if (previous.direction === 'L') {
+    } else if (point.pr === 'R') {
       next.point.overInLeft = point.leftOutboundOffset;
       next.point.overInRight = point.rightOutboundOffset;
     }
   },
-  labelPointedReturnOffsets(point, next, previous) {
+  labelPointedReturnOffsets(point, next) {
     this.labelInboundOffsetsPR(point);
-    this.labelInboundsOfPointAfterPR(point, next, previous);
+    this.labelInboundsOfPointAfterPR(point, next);
   },
   labelOffsets(point, next) {
     if (point.direction === 'R') {
@@ -151,8 +151,7 @@ Contour.prototype = {
       this.createOffsets(point);
       const next = pointFollowing(index, this.strand);
       if (point.pr) {
-        const previous = pointPreceding(index, this.strand);
-        this.labelPointedReturnOffsets(point, next, previous);
+        this.labelPointedReturnOffsets(point, next);
       } else {
         this.labelOffsets(point, next);
       }

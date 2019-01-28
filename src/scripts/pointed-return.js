@@ -26,10 +26,23 @@ PointedReturn.prototype = {
     return points;
   },
   drawInners() {
-    this.pr = this.pr.point;
+    const direction = this.pr.pr;
+
     // get intersection of inner outbound with inner inbound
-    var innerOutboundPolyline = this.pr.innerOutbound;
-    var innerInboundPolyline = this.pr.innerInbound;
+    let innerOutboundPolyline;
+    if (direction === 'L') {
+      innerOutboundPolyline = this.pr.point.underInLeft || this.pr.point.overInLeft;
+    } else {
+      innerOutboundPolyline = this.pr.point.underInRight || this.pr.point.overInRight;
+    }
+
+    let innerInboundPolyline;
+    if (direction === 'L') {
+      innerInboundPolyline = this.pr.point.underOutLeft || this.pr.point.overOutLeft;
+    } else {
+      innerInboundPolyline = this.pr.point.underOutRight || this.pr.point.overOutRight;
+    }
+
     var intersection = knotUtils.collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
@@ -46,9 +59,21 @@ PointedReturn.prototype = {
       return new kld.Point2D(ext.x, ext.y);
     }
 
-    // get intersection of inner outbound with inner inbound
-    var outerOutboundPolyline = this.pr.outerOutbound;
-    var outerInboundPolyline = this.pr.outerInbound;
+    const direction = this.pr.pr;
+
+    let outerOutboundPolyline;
+    if (direction === 'L') {
+      outerOutboundPolyline = this.pr.point.underInRight || this.pr.point.overInRight;
+    } else {
+      outerOutboundPolyline = this.pr.point.underInLeft || this.pr.point.overInLeft;
+    }
+
+    let outerInboundPolyline;
+    if (direction === 'L') {
+      outerInboundPolyline = this.pr.point.underOutRight || this.pr.point.overOutRight;
+    } else {
+      outerInboundPolyline = this.pr.point.underOutLeft || this.pr.point.overOutLeft;
+    }
 
     var d;
     if (this.options.pr.pr === 'L') {

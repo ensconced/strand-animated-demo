@@ -89,41 +89,13 @@ Contour.prototype = {
     point.leftOutboundOffset = this.polyLineOffset(point.outboundBezier, -offset);
     point.rightOutboundOffset = this.polyLineOffset(point.outboundBezier, offset);
   },
-  labelInboundOffsetsLeftPR(point) {
-    point.point.innerInbound = point.leftOutboundOffset;
-    point.point.outerInbound = point.rightOutboundOffset;
-  },
-  labelInboundOffetsRightPR(point) {
-    point.point.innerInbound = point.rightOutboundOffset;
-    point.point.outerInbound = point.leftOutboundOffset;
-  },
-  labelInboundOffsetsPR(point) {
-    if (point.pr === 'L') {
-      this.labelInboundOffsetsLeftPR(point);
-    } else if (point.pr === 'R') {
-      this.labelInboundOffetsRightPR(point);
-    }
-  },
-  labelInboundsOfPointAfterPR(point, next) {
-    if (point.pr === 'L') {
-      next.point.underInLeft = point.leftOutboundOffset;
-      next.point.underInRight = point.rightOutboundOffset;
-    } else if (point.pr === 'R') {
-      next.point.overInLeft = point.leftOutboundOffset;
-      next.point.overInRight = point.rightOutboundOffset;
-    }
-  },
-  labelPointedReturnOffsets(point, next) {
-    this.labelInboundOffsetsPR(point);
-    this.labelInboundsOfPointAfterPR(point, next);
-  },
   labelOffsets(point, next) {
-    if (point.direction === 'R') {
+    if (point.direction === 'R' || point.pr === 'L') {
       point.point.overOutLeft = point.leftOutboundOffset;
       point.point.overOutRight = point.rightOutboundOffset;
       next.point.underInLeft = point.leftOutboundOffset;
       next.point.underInRight = point.rightOutboundOffset;
-    } else if (point.direction === 'L') {
+    } else {
       point.point.underOutLeft = point.leftOutboundOffset;
       point.point.underOutRight = point.rightOutboundOffset;
       next.point.overInLeft = point.leftOutboundOffset;
@@ -132,8 +104,8 @@ Contour.prototype = {
   },
   assignOffsets() {
     this.strand.forEach((point, index) => {
-      this.createOffsets(point);
       const next = pointFollowing(index, this.strand);
+      this.createOffsets(point);
       this.labelOffsets(point, next);
     });
   },

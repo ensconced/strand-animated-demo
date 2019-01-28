@@ -19,7 +19,6 @@ export default function Contour(strand) {
     polygons.push(polygon);
     point.outboundBezier = this.bezier(polygon);
 
-    this.assignOutboundBezes(index);
     this.assignOutbound(index);
   });
 }
@@ -59,16 +58,6 @@ Contour.prototype = {
     var start = [bez.points[0].x, bez.points[0].y];
     var end = [bez.points[3].x, bez.points[3].y];
     this.points[index].outbound = new StraightLine(start, end);
-  },
-  assignOutboundBezes(index, bez) {
-    const point = this.strand[index];
-    if (!point.pr) {
-      if (point.direction === 'R') {
-        point.point.overOut = bez;
-      } else if (point.direction === 'L') {
-        point.point.underOut = bez;
-      }
-    }
   },
   constructMatrix() {
     this.strand.forEach((point, index) => {

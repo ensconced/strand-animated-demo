@@ -44,7 +44,7 @@ function startFreeformMode() {
   makeAllNodesDraggable();
 }
 function setFrameType() {
-  const frameType = document.querySelector('[name=frame-type]:checked').value;
+  const frameType = 'square'; //document.querySelector('[name=frame-type]:checked').value;
   switch (frameType) {
   case 'square':
     drawing.knot && drawing.knot.remove();
@@ -95,6 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('add-node').addEventListener('click', changeDrawingMode('node'), false);
   document.getElementById('add-line').addEventListener('click', changeDrawingMode('line'), false);
   document.getElementById('add-grid').addEventListener('click', changeDrawingMode('grid'), false);
-  document.getElementById('frame-type').addEventListener('click', setFrameType, false);
+  // document.getElementById('frame-type').addEventListener('click', setFrameType, false);
   setFrameType();
 }, false);

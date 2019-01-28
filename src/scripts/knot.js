@@ -12,7 +12,8 @@ export default function Knot(frame) {
   this.remove = function() {
     this.group.remove();
   };
-  this.generateOffsets();
+
+  this.offsetSketches =  this.makeOffsets();
 
   this.trimUnders();
   this.draw();
@@ -30,10 +31,10 @@ Knot.prototype = {
     }
     return strands;
   },
-  generateOffsets() {
+  makeOffsets() {
     this.strands = this.makeStrands();
     this.contours = this.strands.map(strand => Contour(strand));
-    this.offsetSketches = this.contours.map(contour => new OffsetSketch(contour));
+    return this.contours.map(contour => new OffsetSketch(contour));
   },
   trimUnders() {
     this.strands.forEach(strand => {

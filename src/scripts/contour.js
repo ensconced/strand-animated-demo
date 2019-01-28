@@ -121,40 +121,20 @@ Contour.prototype = {
     if (point.direction === 'R') {
       point.point.overOutLeft = point.leftOutboundOffset;
       point.point.overOutRight = point.rightOutboundOffset;
-      if (!next.pr) {
-        next.point.underInLeft = point.leftOutboundOffset;
-        next.point.underInRight = point.rightOutboundOffset;
-      } else {
-        next.point.innerOutbound = point.leftOutboundOffset;
-        next.point.outerOutbound = point.rightOutboundOffset;
-      }
+      next.point.underInLeft = point.leftOutboundOffset;
+      next.point.underInRight = point.rightOutboundOffset;
     } else if (point.direction === 'L') {
       point.point.underOutLeft = point.leftOutboundOffset;
       point.point.underOutRight = point.rightOutboundOffset;
-      if (!next.pr) {
-
-
-        next.point.overInLeft = point.leftOutboundOffset;
-        next.point.overInRight = point.rightOutboundOffset;
-
-
-      } else {
-        next.point.innerOutbound = point.rightOutboundOffset;
-        next.point.outerOutbound = point.leftOutboundOffset;
-
-
-      }
+      next.point.overInLeft = point.leftOutboundOffset;
+      next.point.overInRight = point.rightOutboundOffset;
     }
   },
   assignOffsets() {
     this.strand.forEach((point, index) => {
       this.createOffsets(point);
       const next = pointFollowing(index, this.strand);
-      if (point.pr) {
-        this.labelPointedReturnOffsets(point, next);
-      } else {
-        this.labelOffsets(point, next);
-      }
+      this.labelOffsets(point, next);
     });
   },
   emptyRow() {

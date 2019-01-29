@@ -141,6 +141,7 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     );
   },
   drawLines() {
+    this.lines = [];
     this.nodes.forEach((startNode, i) => {
       this.adjacencyList[i].forEach(j => {
         // avoid drawing each line twice

@@ -56,7 +56,6 @@ function assignOutbound(index) {
   }
 }
 function replaceOutboundWithStraightLine(index, bez) {
-  console.log('making straight line');
   var start = [bez.points[0].x, bez.points[0].y];
   var end = [bez.points[3].x, bez.points[3].y];
   strand[index].outbound = new StraightLine(start, end);

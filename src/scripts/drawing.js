@@ -112,7 +112,9 @@ Drawing.prototype = {
       this.mouseIsDown = false;
       switch (this.mode) {
       case 'grid':
-        this.drawKnot();
+        if (this.frame) {
+          this.drawKnot();
+        }
         break;
       case 'line':
         this.finishDrawingLine(e);

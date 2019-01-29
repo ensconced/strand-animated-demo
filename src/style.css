@@ -9,9 +9,6 @@ html {
 
 *, *:before, *:after {
   box-sizing: inherit;
-}
-
-body, h1, h2, h3, h4, h5, h6, p, ol, ul {
   margin: 0;
   padding: 0;
   font-weight: normal;
@@ -20,12 +17,6 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
 body {
 	color: #eee;
   background-color: #aaa;
-  display: grid;
-  grid-template-rows: 850px;
-  grid-template-columns: 900px;
-  grid-template-areas:
-    "drawing"
-    "footer";
 }
 
 /*##########*/
@@ -34,19 +25,18 @@ body {
 
 #wrapper {
 	grid-area: drawing;
-	height: 830px;
-	width: 830px;
-	position: absolute;
-	left: 50px;
-	right: 0;
-	top: 20px;
-	bottom: 0;
+	height: 90vh;
+	width: 90vh;
+	position: relative;
+	top: 5vh;
+	margin: 0 auto;
 	overflow: hidden;
 }
 
 #surface {
 	height: 100%;
 	width: 100%;
+	position: absolute;
 	border: 2px solid pink;
 }
 

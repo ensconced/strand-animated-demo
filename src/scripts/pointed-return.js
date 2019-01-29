@@ -76,8 +76,8 @@ PointedReturn.prototype = {
       y: 2 * midTip.y - innerTip.y,
     };
 
-    surface.circle(outerTip.x, outerTip.y, 1).attr({ fill: 'red' });
-    const points = outerOutboundPolyline.concat(outerInboundPolyline);
+    //surface.circle(outerTip.x, outerTip.y, 1).attr({ fill: 'red' });
+    const points = outerOutboundPolyline.concat([outerTip].concat(outerInboundPolyline));
     var pointList = points.reduce(reducer, []);
     var snp = surface.polyline(pointList);
     this.group.add(snp);

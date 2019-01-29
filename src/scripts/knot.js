@@ -57,15 +57,22 @@ Knot.prototype = {
               collectionIntersect(point.underInRight, overLeft) ||
               collectionIntersect(point.underInRight, overRight);
 
-            mutate(point.underOutLeft, point.underOutLeft.slice(intersectLOut.idxA + 1));
-            mutate(point.underOutRight, point.underOutRight.slice(intersectROut.idxA + 1));
-            mutate(point.underInLeft, point.underInLeft.slice(0, intersectLIn.idxA + 1));
-            mutate(point.underInRight, point.underInRight.slice(0, intersectRIn.idxA + 1));
-
-            point.underOutLeft.unshift(intersectLOut.intersection);
-            point.underOutRight.unshift(intersectROut.intersection);
-            point.underInLeft.push(intersectLIn.intersection);
-            point.underInRight.push(intersectRIn.intersection);
+            if (intersectLOut) {
+              mutate(point.underOutLeft, point.underOutLeft.slice(intersectLOut.idxA + 1));
+              point.underOutLeft.unshift(intersectLOut.intersection);
+            }
+            if (intersectROut) {
+              mutate(point.underOutRight, point.underOutRight.slice(intersectROut.idxA + 1));
+              point.underOutRight.unshift(intersectROut.intersection);
+            }
+            if (intersectLIn) {
+              mutate(point.underInLeft, point.underInLeft.slice(0, intersectLIn.idxA + 1));
+              point.underInLeft.push(intersectLIn.intersection);
+            }
+            if (intersectRIn) {
+              mutate(point.underInRight, point.underInRight.slice(0, intersectRIn.idxA + 1));
+              point.underInRight.push(intersectRIn.intersection);
+            }
           }
 
           cpORpr.point.trimmed = true;

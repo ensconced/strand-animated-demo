@@ -1,8 +1,8 @@
-import knotUtils from './knot-utils.js';
+import { collectionIntersect, format, mutate, reducer } from './knot-utils.js';
+import surface from './main.js';
 import { Strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
-import surface from './main.js';
 import OffsetSketch from './offset-sketch';
 
 export default function Knot(frame) {
@@ -45,22 +45,22 @@ Knot.prototype = {
             var overLeft = point.overInLeft.concat(point.overOutLeft);
             var overRight = point.overInRight.concat(point.overOutRight);
             var intersectLOut =
-              knotUtils.collectionIntersect(point.underOutLeft, overLeft) ||
-              knotUtils.collectionIntersect(point.underOutLeft, overRight);
+              collectionIntersect(point.underOutLeft, overLeft) ||
+              collectionIntersect(point.underOutLeft, overRight);
             var intersectROut =
-              knotUtils.collectionIntersect(point.underOutRight, overLeft) ||
-              knotUtils.collectionIntersect(point.underOutRight, overRight);
+              collectionIntersect(point.underOutRight, overLeft) ||
+              collectionIntersect(point.underOutRight, overRight);
             var intersectLIn =
-              knotUtils.collectionIntersect(point.underInLeft, overLeft) ||
-              knotUtils.collectionIntersect(point.underInLeft, overRight);
+              collectionIntersect(point.underInLeft, overLeft) ||
+              collectionIntersect(point.underInLeft, overRight);
             var intersectRIn =
-              knotUtils.collectionIntersect(point.underInRight, overLeft) ||
-              knotUtils.collectionIntersect(point.underInRight, overRight);
+              collectionIntersect(point.underInRight, overLeft) ||
+              collectionIntersect(point.underInRight, overRight);
 
-            knotUtils.mutate(point.underOutLeft, point.underOutLeft.slice(intersectLOut.idxA + 1));
-            knotUtils.mutate(point.underOutRight, point.underOutRight.slice(intersectROut.idxA + 1));
-            knotUtils.mutate(point.underInLeft, point.underInLeft.slice(0, intersectLIn.idxA + 1));
-            knotUtils.mutate(point.underInRight, point.underInRight.slice(0, intersectRIn.idxA + 1));
+            mutate(point.underOutLeft, point.underOutLeft.slice(intersectLOut.idxA + 1));
+            mutate(point.underOutRight, point.underOutRight.slice(intersectROut.idxA + 1));
+            mutate(point.underInLeft, point.underInLeft.slice(0, intersectLIn.idxA + 1));
+            mutate(point.underInRight, point.underInRight.slice(0, intersectRIn.idxA + 1));
 
             point.underOutLeft.unshift(intersectLOut.intersection);
             point.underOutRight.unshift(intersectROut.intersection);
@@ -100,9 +100,9 @@ Knot.prototype = {
     });
   },
   drawOutline(outline) {
-    var points = outline.reduce(knotUtils.reducer, []);
+    var points = outline.reduce(reducer, []);
     var snp = surface.polyline(points);
     this.group.add(snp);
-    knotUtils.format(snp);
+    format(snp);
   },
 };

@@ -1,4 +1,4 @@
-import knotUtils from './knot-utils.js';
+import { linearOrClose } from './knot-utils.js';
 import numeric from 'numeric';
 import Bezier from 'bezier-js';
 import StraightLine from './straight-line.js';
@@ -51,11 +51,12 @@ function getBezier(index, xCntrlPoints, yCntrlPoints) {
 }
 function assignOutbound(index) {
   const point = strand[index];
-  if (knotUtils.linearOrClose(point.outboundBezier)) {
+  if (linearOrClose(point.outboundBezier)) {
     replaceOutboundWithStraightLine(index, point.outboundBezier);
   }
 }
 function replaceOutboundWithStraightLine(index, bez) {
+  console.log('making straight line');
   var start = [bez.points[0].x, bez.points[0].y];
   var end = [bez.points[3].x, bez.points[3].y];
   strand[index].outbound = new StraightLine(start, end);

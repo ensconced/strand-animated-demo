@@ -1,4 +1,4 @@
-import knotUtils from './knot-utils.js';
+import { reducer, collectionIntersect, format } from './knot-utils.js';
 import config from './config';
 import kldIntersections from 'kld-intersections';
 import surface from './main.js';
@@ -43,16 +43,16 @@ PointedReturn.prototype = {
       innerInboundPolyline = this.pr.point.underOutRight || this.pr.point.overOutRight;
     }
 
-    var intersection = knotUtils.collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
+    var intersection = collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
     // with the part of inbound inner from after the intersection...
     var outClipped = this.clippedOutboundPath(intersection, innerOutboundPolyline);
     var inClipped = this.clippedInboundPath(intersection, innerInboundPolyline);
-    var points = outClipped.concat(inClipped).reduce(knotUtils.reducer, []);
+    var points = outClipped.concat(inClipped).reduce(reducer, []);
     var snp = surface.polyline(points);
     this.group.add(snp);
-    knotUtils.format(snp);
+    format(snp);
   },
   drawOuters() {
     function kldPoint(ext) {
@@ -122,9 +122,9 @@ PointedReturn.prototype = {
     // concatenate inbound polyline
     outboundExtensions = outboundExtensions.concat(inboundExtensions);
     points = points.concat(outboundExtensions.concat(outerInboundPolyline));
-    var pointList = points.reduce(knotUtils.reducer, []);
+    var pointList = points.reduce(reducer, []);
     var snp = surface.polyline(pointList);
     this.group.add(snp);
-    knotUtils.format(snp);
+    format(snp);
   },
 };

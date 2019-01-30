@@ -11,26 +11,31 @@ export default function Frame(options) {
   this.adjacencyList = [];
   const initialBox = options.initialBox;
   const finalBox = options.finalBox;
+  const nodes = options.nodes;
+  const adjacencies = options.adjacencies;
   // if drawn as grid rather than individual nodes and lines...
   if (initialBox && finalBox) {
     this.leftmost = Math.min(initialBox[0], finalBox[0]);
     this.topmost = Math.min(initialBox[1], finalBox[1]);
     this.rightmost = Math.max(initialBox[0], finalBox[0]);
     this.bottommost = Math.max(initialBox[1], finalBox[1]);
+
+    // 'super'
+    Grid.call(this, {
+      drawing: options.drawing,
+      startCol: this.leftmost,
+      startRow: this.topmost,
+      cols: this.rightmost - this.leftmost + 1,
+      rows: this.bottommost - this.topmost + 1,
+      style: config.frame,
+    });
+
+    this.setNodes();
+    this.setLines();
+  } else if (nodes && adjacencies) {
+    this.nodes = nodes;
+    this.adjacencyList = adjacencies;
   }
-
-  // 'super'
-  Grid.call(this, {
-    drawing: options.drawing,
-    startCol: this.leftmost,
-    startRow: this.topmost,
-    cols: this.rightmost - this.leftmost + 1,
-    rows: this.bottommost - this.topmost + 1,
-    style: config.frame,
-  });
-
-  this.setNodes();
-  this.setLines();
 }
 
 // frames inherit from grids
@@ -83,8 +88,8 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     this.draw();
   },
   redrawWithKnot() {
-    if (this.options.drawing.knot) {
-      this.options.drawing.knot.remove();
+    if (this.options.drawing.currentKnot) {
+      this.options.drawing.currentKnot.remove();
     }
     this.options.drawing.drawKnot();
     this.redraw();
@@ -132,6 +137,9 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     });
   },
   drawLineBetween(startNode, endNode) {
+    if (!endNode) {
+      debugger;
+    }
     this.lines.push(
       new Line({
         startNode,
@@ -144,6 +152,11 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     this.lines = [];
     this.nodes.forEach((startNode, i) => {
       this.adjacencyList[i].forEach(j => {
+        if (!this.nodes[j]) {
+          const a = this;
+          console.log(a);
+          debugger;
+        }
         // avoid drawing each line twice
         if (i < j) {
           this.drawLineBetween(startNode, this.nodes[j]);
@@ -169,6 +182,17 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
         gridSystem: 'square',
       })
     );
+  },
+  merge(otherFrame) {
+    const originalLength = this.nodes.length;
+    const nodes = this.nodes.concat(otherFrame.nodes);
+    const newAdjacencies = otherFrame.adjacencyList.map(arr => arr.map(x => x + originalLength));
+    const adjacencies = this.adjacencyList.concat(newAdjacencies);
+    return new Frame({
+      nodes,
+      adjacencies,
+      drawing: this.options.drawing
+    });
   },
   handleNodePlacement(event) {
     const coords = Mouse.closestGraphCoords(event);

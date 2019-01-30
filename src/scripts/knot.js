@@ -7,12 +7,8 @@ import OffsetSketch from './offset-sketch';
 
 export default function Knot(frame) {
   this.group = surface.g();
+  this.groups = [this.group];
   this.frame = frame;
-
-  this.remove = function() {
-    this.group.remove();
-  };
-
   this.offsetSketches =  this.makeOffsets();
 
   this.trimUnders();
@@ -24,6 +20,19 @@ export default function Knot(frame) {
 
 Knot.prototype = {
   constructor: Knot,
+  remove() {
+    this.groups.forEach(group => group.remove());
+    this.group.remove();
+  },
+  merge(otherKnot, lineStart, lineEnd) {
+    const mergedFrame = this.frame.merge(otherKnot.frame);
+    mergedFrame.markAsAdjacent(lineStart, lineEnd);
+    mergedFrame.drawLines();
+    const mergedKnot = new Knot(mergedFrame);
+    otherKnot.groups.forEach(group => this.groups[0].add(group));
+    mergedKnot.groups = this.groups;
+    return mergedKnot;
+  },
   makeStrands() {
     const strands = [];
     while (this.frame.lines.some(line => line.uncrossed())) {
@@ -97,7 +106,7 @@ Knot.prototype = {
           // here we draw the PRs
           var pr = new PointedReturn({
             pr: strandElement,
-            group: this.group,
+            group: this.groups[0],
             middleOutbound: pointPreceding(i, strand).outboundBezier,
             middleInbound: strandElement.outboundBezier,
           });
@@ -109,7 +118,7 @@ Knot.prototype = {
   drawOutline(outline) {
     var points = outline.reduce(reducer, []);
     var snp = surface.polyline(points);
-    this.group.add(snp);
+    this.groups[0].add(snp);
     format(snp);
   },
 };

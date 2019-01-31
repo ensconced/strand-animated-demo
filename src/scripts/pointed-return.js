@@ -4,7 +4,7 @@ import surface from './main.js';
 export default function PointedReturn(options) {
   this.options = options;
   this.pr = options.pr;
-  this.group = options.group;
+  this.elements = options.elements;
 }
 
 PointedReturn.prototype = {
@@ -49,7 +49,7 @@ PointedReturn.prototype = {
     this.inClipped = this.clippedInboundPath(intersection, innerInboundPolyline);
     var points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
     var snp = surface.polyline(points);
-    this.group.add(snp);
+    this.elements.push(snp);
     format(snp);
   },
   drawOuters() {
@@ -80,7 +80,7 @@ PointedReturn.prototype = {
     const points = outerOutboundPolyline.concat([outerTip].concat(outerInboundPolyline));
     var pointList = points.reduce(reducer, []);
     var snp = surface.polyline(pointList);
-    this.group.add(snp);
+    this.elements.push(snp);
     format(snp);
   },
 };

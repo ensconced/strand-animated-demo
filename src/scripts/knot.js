@@ -6,31 +6,28 @@ import Contour from './contour.js';
 import OffsetSketch from './offset-sketch';
 
 export default function Knot(frame) {
-  this.group = surface.g();
-  this.groups = [this.group];
   this.frame = frame;
-  this.offsetSketches =  this.makeOffsets();
-
-  this.trimUnders();
+  this.init();
   this.draw();
-  this.frame.remove();
-  this.frame.draw();
   // drawing.stopDrawingFrame();
 }
 
 Knot.prototype = {
   constructor: Knot,
   remove() {
-    this.groups.forEach(group => group.remove());
-    this.group.remove();
+    this.elements.forEach(element => element.remove());
+  },
+  init() {
+    this.elements = [];
+    this.offsetSketches =  this.makeOffsets();
+    this.trimUnders();
   },
   merge(otherKnot, lineStart, lineEnd) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
     mergedFrame.markAsAdjacent(lineStart, lineEnd);
     mergedFrame.drawLines();
     const mergedKnot = new Knot(mergedFrame);
-    otherKnot.groups.forEach(group => this.groups[0].add(group));
-    mergedKnot.groups = this.groups;
+    this.elements = this.elements.concat(otherKnot.elements);
     return mergedKnot;
   },
   makeStrands() {
@@ -44,6 +41,10 @@ Knot.prototype = {
     this.strands = this.makeStrands();
     this.contours = this.strands.map(strand => Contour(strand));
     return this.contours.map(contour => new OffsetSketch(contour));
+  },
+  addLineBetween(nodeA, nodeB) {
+    this.frame.markAsAdjacent(nodeA, nodeB);
+    this.frame.drawLines();
   },
   trimUnders() {
     this.strands.forEach(strand => {
@@ -106,7 +107,7 @@ Knot.prototype = {
           // here we draw the PRs
           var pr = new PointedReturn({
             pr: strandElement,
-            group: this.groups[0],
+            elements: this.elements,
             middleOutbound: pointPreceding(i, strand).outboundBezier,
             middleInbound: strandElement.outboundBezier,
           });
@@ -114,11 +115,13 @@ Knot.prototype = {
         }
       });
     });
+    this.frame.remove();
+    this.frame.draw();
   },
   drawOutline(outline) {
     var points = outline.reduce(reducer, []);
     var snp = surface.polyline(points);
-    this.groups[0].add(snp);
+    this.elements.push(snp);
     format(snp);
   },
 };

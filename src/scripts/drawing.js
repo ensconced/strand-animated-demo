@@ -86,9 +86,9 @@ Drawing.prototype = {
         this.knots.push(this.currentKnot);
         this.currentFrame.drawLines();
       } else {
-        this.currentFrame.markAsAdjacent(this.lineStart, this.lineEnd);
-        this.currentFrame.drawLines();
-        this.currentFrame.redrawWithKnot();
+        this.currentKnot.addLineBetween(this.lineStart, this.lineEnd);
+        this.currentKnot.init();
+        this.currentKnot.draw();
       }
     }
   },

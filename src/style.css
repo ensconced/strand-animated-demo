@@ -24,7 +24,6 @@ body {
 /*##########*/
 
 #wrapper {
-	grid-area: drawing;
 	height: 90vh;
 	width: 90vh;
 	position: relative;
@@ -41,15 +40,17 @@ body {
 }
 
 footer {
-	text-align: center;
-	grid-area: footer;
-	margin-bottom: 20px;
+	height: 30px;
+	position: absolute;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	bottom: 0;
+	width: 100%;
 }
 
 button {
 	font-size: 20px;
-	display: block;
-	margin: 10px auto;
 }
 
 #frame-type {

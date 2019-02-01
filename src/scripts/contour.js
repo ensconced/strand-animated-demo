@@ -1,6 +1,6 @@
 import { linearOrClose } from './knot-utils.js';
 import numeric from 'numeric';
-import Bezier from 'bezier-js';
+import Bezier from './bezier.js';
 import StraightLine from './straight-line.js';
 import { pointFollowing } from './strand.js';
 

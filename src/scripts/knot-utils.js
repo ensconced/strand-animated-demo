@@ -1,6 +1,6 @@
 import kldIntersections from 'kld-intersections';
 import config from './config.js';
-import Bezier from 'bezier-js';
+import Bezier from './bezier.js';
 
 export function collectionIntersect(polylineA, polylineB) {
   //debugger;

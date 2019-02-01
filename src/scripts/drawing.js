@@ -84,7 +84,6 @@ Drawing.prototype = {
         this.currentKnot = knotA.merge(knotB, this.lineStart, this.lineEnd);
         this.currentFrame = this.currentKnot.frame;
         this.knots.push(this.currentKnot);
-        this.currentFrame.drawLines();
       } else {
         this.currentKnot.addLineBetween(this.lineStart, this.lineEnd);
         this.currentKnot.init();

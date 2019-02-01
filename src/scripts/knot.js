@@ -25,7 +25,7 @@ Knot.prototype = {
   merge(otherKnot, lineStart, lineEnd) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
     mergedFrame.markAsAdjacent(lineStart, lineEnd);
-    mergedFrame.drawLines();
+    mergedFrame.draw();
     const mergedKnot = new Knot(mergedFrame);
     this.elements = this.elements.concat(otherKnot.elements);
     return mergedKnot;

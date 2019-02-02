@@ -46,6 +46,10 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
       return someNode.sameNode(node);
     });
   },
+  remove() {
+    this.lines.forEach(line => line.snapObj.remove());
+    this.nodes.forEach(node => node.snapObj.remove());
+  },
   closestNodeToPoint(coords) {
     return this.nodes.reduce(function (acc, node) {
       if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {

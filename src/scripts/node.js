@@ -23,10 +23,10 @@ Node.prototype = {
     return this.x === otherNode.x && this.y === otherNode.y;
   },
   draw() {
-    this.snapObject = surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
+    this.snapObj = surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
   },
   remove() {
-    if (this.snapObject) this.snapObject.remove();
+    if (this.snapObj) this.snapObj.remove();
   },
   hasOverlap(pxX, pxY) {
     const deltaX = Math.abs(pxX - this.x);

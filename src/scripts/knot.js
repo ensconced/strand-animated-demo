@@ -16,6 +16,7 @@ Knot.prototype = {
   constructor: Knot,
   remove() {
     this.elements.forEach(element => element.remove());
+    this.frame.remove();
   },
   init() {
     this.elements = [];

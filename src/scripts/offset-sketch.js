@@ -15,6 +15,7 @@ OffsetSketch.prototype = {
     return result;
   },
   safeOffset(bezier, offset) {
+    // is this precaution necessary when using my fork of bezier-js?
     const simpleNonStubs = removeStubs(bezier.reduce());
     return simpleNonStubs.reduce((acc, nonStub) => {
       return acc.concat(this.safeScale(nonStub, offset));

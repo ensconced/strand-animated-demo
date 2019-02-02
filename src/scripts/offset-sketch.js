@@ -1,7 +1,6 @@
 import config from './config.js';
 import { polyline, removeStubs } from './knot-utils.js';
 import { pointFollowing } from './strand.js';
-import { paint } from './debug-tools.js';
 
 export default function OffsetSketch(contour) {
   this.contour = contour;
@@ -16,9 +15,6 @@ OffsetSketch.prototype = {
     return result;
   },
   safeOffset(bezier, offset) {
-    if (bezier.points[0].x === 386 & bezier.points[0].y === 386) {
-      debugger;
-    }
     const simpleNonStubs = removeStubs(bezier.reduce());
     return simpleNonStubs.reduce((acc, nonStub) => {
       return acc.concat(this.safeScale(nonStub, offset));
@@ -45,12 +41,6 @@ OffsetSketch.prototype = {
   createOffsets(point) {
     const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
     point.leftOutboundOffset = this.polyLineOffset(point.outboundBezier, -offset);
-    if (point.leftOutboundOffset[0].x === 384.804907793169 && point.leftOutboundOffset[0].y === 365.66098760072407) {
-      paint(point.outboundBezier, 'blue');
-      paint(point.leftOutboundOffset, 'green');
-      debugger;
-    }
-
     point.rightOutboundOffset = this.polyLineOffset(point.outboundBezier, offset);
   },
   labelOffsets(point, next) {

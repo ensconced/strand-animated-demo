@@ -3,7 +3,6 @@ import config from './config.js';
 import Bezier from './bezier.js';
 
 export function collectionIntersect(polylineA, polylineB) {
-  //debugger;
   var lineA;
   var lineB;
   var intersection;

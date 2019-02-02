@@ -70,12 +70,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
       return line.isBetween(nodeA, nodeB);
     });
   },
-  stopDrawingLine() {
-    const graphArea = this.options.drawing.graphArea;
-    graphArea.removeEventListener('mousemove', this.moveListener);
-    document.removeEventListener('mouseup', this.upListener);
-    this.userLine.remove();
-  },
   joinNodesAtIndex(idxA, idxB) {
     this.adjacencyList[idxA].push(idxB);
     this.adjacencyList[idxB].push(idxA);

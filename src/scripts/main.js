@@ -59,34 +59,6 @@ function setFrameType() {
   }
 }
 
-// function makeDownHandler(node) {
-//   return () => {
-//     const moveListener = makeMoveHandler(node);
-//     drawing.graphArea.addEventListener('mousemove', moveListener);
-//     this.upListener = this.makeMouseUpHandler(node);
-//     document.addEventListener('mouseup', this.upListener);
-//   };
-// }//
-
-// function makeMouseUpHandler(node) {
-//   return () => {
-//     this.stopDrawingLine();
-//     if (this.hoveredNode && !this.lineExistsBetween(node, this.hoveredNode)) {
-//       this.markAsAdjacent(node, this.hoveredNode);
-//     }
-//     this.redrawWithKnot();
-//     this.startLineDrawingMode();
-//   };
-// }//
-
-// function makeMoveHandler(node) {
-//   return (event) => {
-//     this.userLine && this.userLine.remove();
-//     this.userLine = Snap('#surface').line(node.x, node.y, ...Mouse.relativeCoords(event));
-//     this.userLine.attr(config.frame);
-//   };
-// }
-
 function changeDrawingMode(newMode) {
   return () => drawing.mode = newMode;
 }

@@ -352,7 +352,21 @@ Bezier.prototype = {
     return utils.inflections(this.points);
   },
   normal: function(t) {
+    if (this._linear) {
+      return this.linearNormal();
+    }
     return this._3d ? this.__normal3(t) : this.__normal2(t);
+  },
+  linearNormal: function () {
+    var lastPoint = this.points[this.points.length - 1];
+    var firstPoint = this.points[0];
+    var length = this.length();
+    var deltaY = (lastPoint.y - firstPoint.y) / length;
+    var deltaX = (lastPoint.x - firstPoint.x) / length;
+    if (isNaN(deltaX)) {
+      debugger;
+    }
+    return { x: -deltaY, y: deltaX };
   },
   __normal2: function(t) {
     var d = this.derivative(t);
@@ -400,6 +414,9 @@ Bezier.prototype = {
       z: R[6] * r1.x + R[7] * r1.y + R[8] * r1.z
     };
     return n;
+  },
+  isStub: function () {
+    return this.length() < 0.001;
   },
   hull: function(t) {
     var p = this.points,
@@ -591,7 +608,7 @@ Bezier.prototype = {
     }
 
     // second pass: further reduce these segments to simple segments
-    pass1.forEach(function(p1) {
+    pass1.filter(bez => !bez.isStub()).forEach(function(p1) {
       t1 = 0;
       t2 = 0;
       while (t2 <= 1) {
@@ -619,7 +636,7 @@ Bezier.prototype = {
         pass2.push(segment);
       }
     });
-    return pass2;
+    return pass2.filter(bez => !bez.isStub());
   },
   scale: function(d) {
     if (this._linear) {

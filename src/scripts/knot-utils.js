@@ -87,23 +87,6 @@ export function linearOrClose(bez) {
   return (length / width) > 100;
 }
 
-export function removeStubs(collection) {
-  return collection.filter(bez => !stub(bez));
-}
-
-function stub(curve) {
-  var startPoint;
-  if (curve.constructor.name === 'StraightLine') {
-    return !(Math.abs(curve.end[0] - curve.start[0]) > 1 || Math.abs(curve.end[1] - curve.start[1]) > 1);
-  } else {
-    // curve is bezier
-    startPoint = curve.points[0];
-    return !curve.points.slice(1).some(function(point) {
-      return Math.abs(point.x - startPoint.x) > 1 || Math.abs(point.y - startPoint.y) > 1;
-    });
-  }
-}
-
 export function mutate(arr, newArr) {
   // sets arr to newArr in mutating fashion
   while (arr.length > 0) {

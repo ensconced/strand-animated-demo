@@ -121,6 +121,9 @@ Knot.prototype = {
   },
   drawOutline(outline) {
     var points = outline.reduce(reducer, []);
+    if (points.includes(NaN)) {
+      debugger;
+    }
     var snp = surface.polyline(points);
     this.elements.push(snp);
     format(snp);

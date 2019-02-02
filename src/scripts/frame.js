@@ -88,11 +88,9 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     this.draw();
   },
   redrawWithKnot() {
-    debugger;
     if (this.options.drawing.currentKnot) {
       this.options.drawing.currentKnot.remove();
     }
-    // this is the problem right here:
     this.options.drawing.drawKnot();
     this.redraw();
   },

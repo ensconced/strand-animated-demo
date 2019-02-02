@@ -83,17 +83,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   markAsAdjacent(nodeA, nodeB) {
     this.joinNodesAtIndex(this.nodeIndex(nodeA), this.nodeIndex(nodeB));
   },
-  redraw() {
-    this.remove();
-    this.draw();
-  },
-  redrawWithKnot() {
-    if (this.options.drawing.currentKnot) {
-      this.options.drawing.currentKnot.remove();
-    }
-    this.options.drawing.drawKnot();
-    this.redraw();
-  },
   hoverIn(node) {
     return () => {
       this.hoveredNode = node;

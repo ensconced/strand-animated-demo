@@ -20,7 +20,6 @@ export default function Line(options) {
   this.crossingPoint = new CrossingPoint(this.startX, this.startY, this.endX, this.endY, this);
 
   this.snapObj = surface.line(this.startX, this.startY, this.endX, this.endY).attr(options.style);
-
 }
 
 Line.prototype = {

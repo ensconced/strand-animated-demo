@@ -9,7 +9,6 @@ export default function Knot(frame) {
   this.frame = frame;
   this.init();
   this.draw();
-  // drawing.stopDrawingFrame();
 }
 
 Knot.prototype = {
@@ -20,7 +19,7 @@ Knot.prototype = {
   },
   init() {
     this.elements = [];
-    this.offsetSketches =  this.makeOffsets();
+    this.offsetSketches = this.makeOffsets();
     this.trimUnders();
   },
   merge(otherKnot, lineStart, lineEnd) {
@@ -47,46 +46,41 @@ Knot.prototype = {
     this.frame.markAsAdjacent(nodeA, nodeB);
     this.frame.drawLines();
   },
+  trimUnder(point, direction, bound) {
+    const overLeft = point.overInLeft.concat(point.overOutLeft);
+    const overRight = point.overInRight.concat(point.overOutRight);
+    let under;
+    if (bound === 'out') {
+      under = direction === 'R' ? point.underOutRight : point.underOutLeft;
+    } else if (bound === 'in') {
+      under = direction === 'R' ? point.underInRight : point.underInLeft;
+    }
+    const intersect = collectionIntersect(under, overLeft) ||
+    collectionIntersect(under, overRight);
+
+    if (intersect) {
+      if (bound === 'out') {
+        mutate(under, under.slice(intersect.idxA + 1));
+        under.unshift(intersect.intersection);
+      } else if (bound === 'in') {
+        mutate(under, under.slice(0, intersect.idxA + 1));
+        under.push(intersect.intersection);
+      }
+    }
+  },
   trimUnders() {
     this.strands.forEach(strand => {
       strand.forEach(cpORpr => {
         var point = cpORpr.point;
         if (!cpORpr.pr) {
-          if (!cpORpr.point.trimmed) {
-            var overLeft = point.overInLeft.concat(point.overOutLeft);
-            var overRight = point.overInRight.concat(point.overOutRight);
-            var intersectLOut =
-              collectionIntersect(point.underOutLeft, overLeft) ||
-              collectionIntersect(point.underOutLeft, overRight);
-            var intersectROut =
-              collectionIntersect(point.underOutRight, overLeft) ||
-              collectionIntersect(point.underOutRight, overRight);
-            var intersectLIn =
-              collectionIntersect(point.underInLeft, overLeft) ||
-              collectionIntersect(point.underInLeft, overRight);
-            var intersectRIn =
-              collectionIntersect(point.underInRight, overLeft) ||
-              collectionIntersect(point.underInRight, overRight);
-
-            if (intersectLOut) {
-              mutate(point.underOutLeft, point.underOutLeft.slice(intersectLOut.idxA + 1));
-              point.underOutLeft.unshift(intersectLOut.intersection);
-            }
-            if (intersectROut) {
-              mutate(point.underOutRight, point.underOutRight.slice(intersectROut.idxA + 1));
-              point.underOutRight.unshift(intersectROut.intersection);
-            }
-            if (intersectLIn) {
-              mutate(point.underInLeft, point.underInLeft.slice(0, intersectLIn.idxA + 1));
-              point.underInLeft.push(intersectLIn.intersection);
-            }
-            if (intersectRIn) {
-              mutate(point.underInRight, point.underInRight.slice(0, intersectRIn.idxA + 1));
-              point.underInRight.push(intersectRIn.intersection);
-            }
+          if (!point.trimmed) {
+            this.trimUnder(point, 'R', 'out');
+            this.trimUnder(point, 'R', 'in');
+            this.trimUnder(point, 'L', 'out');
+            this.trimUnder(point, 'L', 'in');
           }
 
-          cpORpr.point.trimmed = true;
+          point.trimmed = true;
         }
       });
     });

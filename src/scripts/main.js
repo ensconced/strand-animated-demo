@@ -1,6 +1,6 @@
 import Drawing from './drawing.js';
 import Snap from 'snapsvg';
-import Mouse from './mouse.js';
+import { relativeCoords } from './mouse.js';
 import Graph from './graph.js';
 export default Snap('#surface');
 
@@ -18,7 +18,7 @@ function makeAllNodesDraggable() {
 function makeDragHandler(node) {
   return function(e) {
     // change node position
-    [node.x, node.y] = Mouse.relativeCoords(e);
+    [node.x, node.y] = relativeCoords(e);
     // re-draw whole frame
     drawing.frame.remove();
     drawing.frame.draw();

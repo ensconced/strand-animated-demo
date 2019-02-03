@@ -1,6 +1,6 @@
 import config from './config.js';
 import Grid from './grid.js';
-import Mouse from './mouse.js';
+import { pixelCoords } from './mouse.js';
 import Line from './line.js';
 
 export default function Graph() {
@@ -21,8 +21,8 @@ export default function Graph() {
       var startY;
       var endX;
       var endY;
-      [startX, startY] = Mouse.pixelCoords([options.startCol, i]);
-      [endX, endY] = Mouse.pixelCoords([options.startCol + options.cols, i]);
+      [startX, startY] = pixelCoords([options.startCol, i]);
+      [endX, endY] = pixelCoords([options.startCol + options.cols, i]);
 
       this.lines.push(
         new Line({
@@ -43,8 +43,8 @@ export default function Graph() {
       var startY;
       var endX;
       var endY;
-      [startX, startY] = Mouse.pixelCoords([i, options.startRow]);
-      [endX, endY] = Mouse.pixelCoords([i, options.startRow + options.rows]);
+      [startX, startY] = pixelCoords([i, options.startRow]);
+      [endX, endY] = pixelCoords([i, options.startRow + options.rows]);
 
       this.lines.push(
         new Line({

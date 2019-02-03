@@ -2,7 +2,7 @@ import Grid from './grid.js';
 import config from './config.js';
 import Line from './line.js';
 import Node from './node.js';
-import Mouse from './mouse.js';
+import { closestGraphCoords, pixelCoords } from './mouse.js';
 import { coordinateSet } from './general-utils.js';
 
 export default function Frame(options) {
@@ -174,9 +174,9 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     });
   },
   handleNodePlacement(event) {
-    const coords = Mouse.closestGraphCoords(event);
-    const pixelCoords = Mouse.pixelCoords(coords);
-    if (!this.overlapsExistingNode(...pixelCoords)) {
+    const coords = closestGraphCoords(event);
+    const pxCoords = pixelCoords(coords);
+    if (!this.overlapsExistingNode(...pxCoords)) {
       this.remove();
       this.addNode(coords);
       this.adjacencyList.push([]);

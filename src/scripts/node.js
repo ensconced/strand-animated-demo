@@ -1,4 +1,4 @@
-import Mouse from './mouse.js';
+import { pixelCoords } from './mouse.js';
 import surface from './main.js';
 import config from './config.js';
 import { identicalObjects, distanceBetween } from './general-utils.js';
@@ -9,7 +9,7 @@ export default function Node(options) {
     this.gridY = options.y;
     var x;
     var y;
-    [x, y] = Mouse.pixelCoords([this.gridX, this.gridY]);
+    [x, y] = pixelCoords([this.gridX, this.gridY]);
     this.x = x;
     this.y = y;
   } else if (options.gridSystem === 'freeform') {

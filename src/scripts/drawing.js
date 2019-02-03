@@ -1,6 +1,6 @@
 import Knot from './knot.js';
 import Frame from './frame.js';
-import Mouse from './mouse.js';
+import { rowAndCol, doIfInGraph, relativeCoords } from './mouse.js';
 import { identicalObjects } from './general-utils';
 import Snap from 'snapsvg';
 import config from './config.js';
@@ -47,15 +47,15 @@ Drawing.prototype = {
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
   },
   startDrawingGrid(e) {
-    this.initialBox = Mouse.rowAndCol(e);
+    this.initialBox = rowAndCol(e);
     this.finalBox = this.initialBox;
-    Mouse.doIfInGraph(this.initialBox, this.drawFrame.bind(this));
+    doIfInGraph(this.initialBox, this.drawFrame.bind(this));
   },
   dragFrame(e) {
     const previousBox = this.finalBox;
-    this.finalBox = Mouse.rowAndCol(e);
+    this.finalBox = rowAndCol(e);
     if (!identicalObjects(previousBox, this.finalBox)) {
-      Mouse.doIfInGraph(this.finalBox, function() {
+      doIfInGraph(this.finalBox, function() {
         if (this.currentFrame) this.currentFrame.remove();
         this.currentFrame = new Frame({
           initialBox: this.initialBox,
@@ -73,7 +73,7 @@ Drawing.prototype = {
   },
   finishDrawingLine(e) {
     this.currentFrame.userLine && this.currentFrame.userLine.remove();
-    const coords = Mouse.relativeCoords(e);
+    const coords = relativeCoords(e);
     this.lineEnd = this.nodeAt(coords);
     const isValidLine = this.lineEnd && this.lineEnd !== this.lineStart;
     if (isValidLine && !this.currentFrame.lineExistsBetween(this.lineStart, this.lineEnd)) {
@@ -129,7 +129,7 @@ Drawing.prototype = {
       this.startDrawingGrid(e);
       break;
     case 'add-line':
-      this.startDrawingLine(Mouse.relativeCoords(e));
+      this.startDrawingLine(relativeCoords(e));
       break;
     case 'add-node':
       this.addNode(e);
@@ -143,7 +143,7 @@ Drawing.prototype = {
         this.dragFrame(e);
         break;
       case 'add-line':
-        this.drawUserLine(Mouse.relativeCoords(e));
+        this.drawUserLine(relativeCoords(e));
       }
     }
   },

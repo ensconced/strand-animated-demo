@@ -18,7 +18,6 @@ export default function Node(options) {
   }
 }
 Node.prototype = {
-  constructor: Node,
   sameNode(otherNode) {
     return this.x === otherNode.x && this.y === otherNode.y;
   },

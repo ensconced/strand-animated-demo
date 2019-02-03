@@ -14,7 +14,6 @@ function Drawing() {
 }
 
 Drawing.prototype = {
-  constructor: Drawing,
   addMouseListeners() {
     this.boundHandleMouseDown = this.handleMouseDown.bind(this);
     this.boundHandleMouseUp = this.handleMouseUp.bind(this);

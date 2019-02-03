@@ -12,7 +12,6 @@ export default function Knot(frame) {
 }
 
 Knot.prototype = {
-  constructor: Knot,
   remove() {
     this.elements.forEach(element => element.remove());
     this.frame.remove();

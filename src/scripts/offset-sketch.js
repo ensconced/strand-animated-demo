@@ -8,7 +8,6 @@ export default function OffsetSketch(contour) {
 }
 
 OffsetSketch.prototype = {
-  constructor: OffsetSketch,
   polyLineOffset(bezier, offset) {
     const reduced = bezier.reduce();
     const polyBezier = reduced.map(segment => segment.scale(offset));

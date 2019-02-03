@@ -23,7 +23,6 @@ export default function Line(options) {
 }
 
 Line.prototype = {
-  constructor: Line,
   uncrossed() {
     return !this.crossingPoint.fullyCrossed();
   },

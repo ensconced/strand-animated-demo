@@ -5,7 +5,6 @@ function StrandElement(options) {
 }
 
 StrandElement.prototype = {
-  constructor: StrandElement,
   get x() {
     return this.point.coords[0];
   },

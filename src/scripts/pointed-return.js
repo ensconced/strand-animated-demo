@@ -8,7 +8,6 @@ export default function PointedReturn(options) {
 }
 
 PointedReturn.prototype = {
-  constructor: PointedReturn,
   draw() {
     this.drawInners();
     this.drawOuters();

@@ -19,23 +19,13 @@ export default function Frame(options) {
 // frames inherit from grids
 Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   constructor: Frame,
-  initFromBoxExtrema(initialBox, finalBox, drawing) {
+  initFromBoxExtrema(initialBox, finalBox) {
     this.nodes = [];
     this.adjacencyList = [];
     this.leftmost = Math.min(initialBox[0], finalBox[0]);
     this.topmost = Math.min(initialBox[1], finalBox[1]);
     this.rightmost = Math.max(initialBox[0], finalBox[0]);
     this.bottommost = Math.max(initialBox[1], finalBox[1]);
-
-    // 'super'
-    Grid.call(this, {
-      drawing: drawing,
-      startCol: this.leftmost,
-      startRow: this.topmost,
-      cols: this.rightmost - this.leftmost + 1,
-      rows: this.bottommost - this.topmost + 1,
-      style: config.frame,
-    });
 
     this.setNodes();
     this.setLines();
@@ -44,10 +34,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     return this.nodes.findIndex(function (someNode) {
       return someNode.sameNode(node);
     });
-  },
-  remove() {
-    this.lines.forEach(line => line.snapObj.remove());
-    this.nodes.forEach(node => node.snapObj.remove());
   },
   closestNodeToPoint(coords) {
     return this.nodes.reduce(function (acc, node) {

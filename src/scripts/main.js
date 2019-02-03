@@ -1,12 +1,8 @@
 import Drawing from './drawing.js';
 import Snap from 'snapsvg';
 import Mouse from './mouse.js';
-//import Frame from './frame.js';
 import Graph from './graph.js';
 export default Snap('#surface');
-
-const noOp = () => {};
-const drawing = new Drawing();
 
 function drawSquareGrid() {
   drawing.graph = new Graph();
@@ -20,9 +16,9 @@ function makeAllNodesDraggable() {
   });
 }
 function makeDragHandler(node) {
-  return function() {
+  return function(e) {
     // change node position
-    [node.x, node.y] = Mouse.relativeCoords(event);
+    [node.x, node.y] = Mouse.relativeCoords(e);
     // re-draw whole frame
     drawing.frame.remove();
     drawing.frame.draw();
@@ -62,9 +58,12 @@ function changeDrawingMode(newMode) {
   return () => drawing.mode = newMode;
 }
 
+const noOp = () => {};
+const drawing = new Drawing();
 document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('add-node').addEventListener('click', changeDrawingMode('node'), false);
-  document.getElementById('add-line').addEventListener('click', changeDrawingMode('line'), false);
-  document.getElementById('add-grid').addEventListener('click', changeDrawingMode('grid'), false);
+  ['add-node', 'add-line', 'add-grid'].forEach(function (id) {
+    const button = document.getElementById(id);
+    button.addEventListener('click', changeDrawingMode(id), false);
+  });
   setFrameType();
 }, false);

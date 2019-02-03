@@ -8,27 +8,30 @@ import config from './config.js';
 function Drawing() {
   this.knots = [];
   this.frames = [];
-  this.mode = 'grid';
+  this.mode = 'add-grid';
   this.wrapper = document.getElementById('wrapper');
-  this.boundHandleMouseDown = this.handleMouseDown.bind(this);
-  this.boundHandleMouseUp = this.handleMouseUp.bind(this);
-  this.boundHandleMouseMove = this.handleMouseMove.bind(this);
-  this.wrapper.addEventListener('mousedown', this.boundHandleMouseDown, false);
-  window.addEventListener('mouseup', this.boundHandleMouseUp, false);
-  this.wrapper.addEventListener('mousemove', this.boundHandleMouseMove, false);
+  this.addMouseListeners();
 }
 
 Drawing.prototype = {
   constructor: Drawing,
+  addMouseListeners() {
+    this.boundHandleMouseDown = this.handleMouseDown.bind(this);
+    this.boundHandleMouseUp = this.handleMouseUp.bind(this);
+    this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+    this.wrapper.addEventListener('mousedown', this.boundHandleMouseDown, false);
+    window.addEventListener('mouseup', this.boundHandleMouseUp, false);
+    this.wrapper.addEventListener('mousemove', this.boundHandleMouseMove, false);
+  },
   drawKnot() {
     this.currentKnot = new Knot(this.currentFrame);
     this.knots.push(this.currentKnot);
   },
-  addNode() {
+  addNode(e) {
     if (!this.currentFrame) {
       this.currentFrame = new Frame({});
     }
-    this.currentFrame.handleNodePlacement(event);
+    this.currentFrame.handleNodePlacement(e);
   },
   drawFrame() {
     // remove any extant frames
@@ -43,14 +46,14 @@ Drawing.prototype = {
     // add the listener for mouse movement
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
   },
-  startDrawingGrid() {
-    this.initialBox = Mouse.rowAndCol(event);
+  startDrawingGrid(e) {
+    this.initialBox = Mouse.rowAndCol(e);
     this.finalBox = this.initialBox;
     Mouse.doIfInGraph(this.initialBox, this.drawFrame.bind(this));
   },
-  dragFrame() {
+  dragFrame(e) {
     const previousBox = this.finalBox;
-    this.finalBox = Mouse.rowAndCol(event);
+    this.finalBox = Mouse.rowAndCol(e);
     if (!identicalObjects(previousBox, this.finalBox)) {
       Mouse.doIfInGraph(this.finalBox, function() {
         if (this.currentFrame) this.currentFrame.remove();
@@ -122,24 +125,24 @@ Drawing.prototype = {
   handleMouseDown(e) {
     this.mouseIsDown = true;
     switch (this.mode) {
-    case 'grid':
-      this.startDrawingGrid();
+    case 'add-grid':
+      this.startDrawingGrid(e);
       break;
-    case 'line':
+    case 'add-line':
       this.startDrawingLine(Mouse.relativeCoords(e));
       break;
-    case 'node':
-      this.addNode();
+    case 'add-node':
+      this.addNode(e);
       break;
     }
   },
   handleMouseMove(e) {
     if (this.mouseIsDown) {
       switch (this.mode) {
-      case 'grid':
-        this.dragFrame();
+      case 'add-grid':
+        this.dragFrame(e);
         break;
-      case 'line':
+      case 'add-line':
         this.drawUserLine(Mouse.relativeCoords(e));
       }
     }
@@ -148,12 +151,12 @@ Drawing.prototype = {
     if (e.target.tagName !== 'BUTTON') {
       this.mouseIsDown = false;
       switch (this.mode) {
-      case 'grid':
+      case 'add-grid':
         if (this.currentFrame) {
           this.drawKnot();
         }
         break;
-      case 'line':
+      case 'add-line':
         this.finishDrawingLine(e);
         break;
       }

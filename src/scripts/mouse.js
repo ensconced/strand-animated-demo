@@ -3,9 +3,9 @@ import config from './config.js';
 export default (function() {
   // for getting coords relative to graph area from absolute coords...
   // (i.e. relative to whole window)
-  function relativeCoords(event) {
-    var absX = event.clientX;
-    var absY = event.clientY;
+  function relativeCoords(e) {
+    var absX = e.clientX;
+    var absY = e.clientY;
     var surface = document.getElementById('surface');
     var svgPosition = surface.getBoundingClientRect();
     var leftOffset = svgPosition.left;

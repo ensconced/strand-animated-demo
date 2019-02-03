@@ -177,9 +177,10 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     const coords = Mouse.closestGraphCoords(event);
     const pixelCoords = Mouse.pixelCoords(coords);
     if (!this.overlapsExistingNode(...pixelCoords)) {
+      this.remove();
       this.addNode(coords);
       this.adjacencyList.push([]);
-      this.redraw();
+      this.draw();
     }
   },
   firstUncrossedLine() {

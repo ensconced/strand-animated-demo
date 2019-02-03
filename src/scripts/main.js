@@ -9,7 +9,6 @@ const noOp = () => {};
 const drawing = new Drawing();
 
 function drawSquareGrid() {
-  // square is default grid type for time being
   drawing.graph = new Graph();
 }
 function makeDraggable(node) {

@@ -20,7 +20,7 @@ Knot.prototype = {
   init() {
     this.elements = [];
     this.offsetSketches = this.makeOffsets();
-    this.trimUnders();
+    this.makeOverUnders();
   },
   merge(otherKnot, lineStart, lineEnd) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
@@ -46,29 +46,32 @@ Knot.prototype = {
     this.frame.markAsAdjacent(nodeA, nodeB);
     this.frame.drawLines();
   },
+  getUnder(point, direction, bound) {
+    if (bound === 'out') {
+      return direction === 'R' ? point.underOutRight : point.underOutLeft;
+    } else if (bound === 'in') {
+      return direction === 'R' ? point.underInRight : point.underInLeft;
+    }
+  },
+  trim(under, intersect, bound) {
+    if (bound === 'out') {
+      mutate(under, under.slice(intersect.idxA + 1));
+      under.unshift(intersect.intersection);
+    } else if (bound === 'in') {
+      mutate(under, under.slice(0, intersect.idxA + 1));
+      under.push(intersect.intersection);
+    }
+  },
   trimUnder(point, direction, bound) {
     const overLeft = point.overInLeft.concat(point.overOutLeft);
     const overRight = point.overInRight.concat(point.overOutRight);
-    let under;
-    if (bound === 'out') {
-      under = direction === 'R' ? point.underOutRight : point.underOutLeft;
-    } else if (bound === 'in') {
-      under = direction === 'R' ? point.underInRight : point.underInLeft;
-    }
-    const intersect = collectionIntersect(under, overLeft) ||
-    collectionIntersect(under, overRight);
-
+    const under = this.getUnder(point, direction, bound);
+    const intersect = collectionIntersect(under, overLeft) || collectionIntersect(under, overRight);
     if (intersect) {
-      if (bound === 'out') {
-        mutate(under, under.slice(intersect.idxA + 1));
-        under.unshift(intersect.intersection);
-      } else if (bound === 'in') {
-        mutate(under, under.slice(0, intersect.idxA + 1));
-        under.push(intersect.intersection);
-      }
+      this.trim(under, intersect, bound);
     }
   },
-  trimUnders() {
+  makeOverUnders() {
     this.strands.forEach(strand => {
       strand.forEach(cpORpr => {
         var point = cpORpr.point;

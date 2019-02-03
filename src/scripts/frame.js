@@ -22,13 +22,26 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   initFromBoxExtrema(initialBox, finalBox) {
     this.nodes = [];
     this.adjacencyList = [];
-    this.leftmost = Math.min(initialBox[0], finalBox[0]);
-    this.topmost = Math.min(initialBox[1], finalBox[1]);
-    this.rightmost = Math.max(initialBox[0], finalBox[0]);
-    this.bottommost = Math.max(initialBox[1], finalBox[1]);
 
-    this.setNodes();
-    this.setLines();
+    const leftmost = Math.min(initialBox[0], finalBox[0]);
+    const topmost = Math.min(initialBox[1], finalBox[1]);
+    const rightmost = Math.max(initialBox[0], finalBox[0]);
+    const bottommost = Math.max(initialBox[1], finalBox[1]);
+
+    this.makeFullFrameBetween(leftmost, topmost, rightmost, bottommost);
+  },
+  makeFullFrameBetween(leftmost, topmost, rightmost, bottommost) {
+    const nodeCoords = coordinateSet({ leftmost, rightmost, topmost, bottommost });
+    nodeCoords.forEach((coord) => {
+      this.nodes.push(
+        new Node({
+          x: coord[0],
+          y: coord[1],
+          gridSystem: 'square',
+        })
+      );
+    });
+    this.adjacencyList = this.allNeighboursAdjacent();
   },
   nodeIndex(node) {
     return this.nodes.findIndex(function (someNode) {
@@ -77,35 +90,20 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   showCrossingPoints() {
     this.lines.forEach(line => line.drawCrossingPoints());
   },
-  setNodes() {
-    const nodeCoords = coordinateSet({
-      leftmost: this.leftmost,
-      rightmost: this.rightmost,
-      topmost: this.topmost,
-      bottommost: this.bottommost
-    });
-    nodeCoords.forEach((coord) => {
-      this.nodes.push(
-        new Node({
-          x: coord[0],
-          y: coord[1],
-          gridSystem: 'square',
-        })
-      );
-    });
-  },
   showAllNodes() {
     this.nodes.forEach(node => node.draw());
   },
-  setLines() {
+  allNeighboursAdjacent() {
+    const adjacencies = [];
     this.nodes.forEach(firstNode => {
-      this.adjacencyList.push([]);
+      adjacencies.push([]);
       this.nodes.forEach((secondNode, j) => {
         if (firstNode.isAdjacentTo(secondNode)) {
-          this.adjacencyList[this.adjacencyList.length - 1].push(j);
+          adjacencies[adjacencies.length - 1].push(j);
         }
       });
     });
+    return adjacencies;
   },
   drawLineBetween(startNode, endNode) {
     this.lines.push(

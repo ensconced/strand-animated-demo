@@ -6,32 +6,10 @@ import { closestGraphCoords, pixelCoords } from './mouse.js';
 import { coordinateSet } from './general-utils.js';
 
 export default function Frame(options) {
-  this.options = options;
-  this.nodes = [];
-  this.adjacencyList = [];
-  const initialBox = options.initialBox;
-  const finalBox = options.finalBox;
-  const nodes = options.nodes;
-  const adjacencies = options.adjacencies;
-  // if drawn as grid rather than individual nodes and lines...
+  const { initialBox, finalBox, nodes, adjacencies, drawing } = options;
   if (initialBox && finalBox) {
-    this.leftmost = Math.min(initialBox[0], finalBox[0]);
-    this.topmost = Math.min(initialBox[1], finalBox[1]);
-    this.rightmost = Math.max(initialBox[0], finalBox[0]);
-    this.bottommost = Math.max(initialBox[1], finalBox[1]);
-
-    // 'super'
-    Grid.call(this, {
-      drawing: options.drawing,
-      startCol: this.leftmost,
-      startRow: this.topmost,
-      cols: this.rightmost - this.leftmost + 1,
-      rows: this.bottommost - this.topmost + 1,
-      style: config.frame,
-    });
-
-    this.setNodes();
-    this.setLines();
+    // i.e. if drawn as grid rather than individual nodes and lines...
+    this.initFromBoxExtrema(initialBox, finalBox, drawing);
   } else if (nodes && adjacencies) {
     this.nodes = nodes;
     this.adjacencyList = adjacencies;
@@ -41,6 +19,27 @@ export default function Frame(options) {
 // frames inherit from grids
 Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   constructor: Frame,
+  initFromBoxExtrema(initialBox, finalBox, drawing) {
+    this.nodes = [];
+    this.adjacencyList = [];
+    this.leftmost = Math.min(initialBox[0], finalBox[0]);
+    this.topmost = Math.min(initialBox[1], finalBox[1]);
+    this.rightmost = Math.max(initialBox[0], finalBox[0]);
+    this.bottommost = Math.max(initialBox[1], finalBox[1]);
+
+    // 'super'
+    Grid.call(this, {
+      drawing: drawing,
+      startCol: this.leftmost,
+      startRow: this.topmost,
+      cols: this.rightmost - this.leftmost + 1,
+      rows: this.bottommost - this.topmost + 1,
+      style: config.frame,
+    });
+
+    this.setNodes();
+    this.setLines();
+  },
   nodeIndex(node) {
     return this.nodes.findIndex(function (someNode) {
       return someNode.sameNode(node);
@@ -105,7 +104,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
           x: coord[0],
           y: coord[1],
           gridSystem: 'square',
-          drawing: this.options.drawing,
         })
       );
     });
@@ -167,11 +165,9 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     const nodes = this.nodes.concat(otherFrame.nodes);
     const newAdjacencies = otherFrame.adjacencyList.map(arr => arr.map(x => x + originalLength));
     const adjacencies = this.adjacencyList.concat(newAdjacencies);
-    return new Frame({
-      nodes,
-      adjacencies,
-      drawing: this.options.drawing
-    });
+    this.nodes = nodes;
+    this.adjacencyList = adjacencies;
+    return this;
   },
   handleNodePlacement(event) {
     const coords = closestGraphCoords(event);

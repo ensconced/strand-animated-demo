@@ -4,6 +4,8 @@ import { relativeCoords } from './mouse.js';
 import Graph from './graph.js';
 export default Snap('#surface');
 
+const noOp = () => {};
+
 function drawSquareGrid() {
   drawing.graph = new Graph();
 }
@@ -58,7 +60,6 @@ function changeDrawingMode(newMode) {
   return () => drawing.mode = newMode;
 }
 
-const noOp = () => {};
 const drawing = new Drawing();
 document.addEventListener('DOMContentLoaded', function () {
   ['add-node', 'add-line', 'add-grid'].forEach(function (id) {

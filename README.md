@@ -6,5 +6,18 @@ A website that generates celtic-style knots (*icovellavna*) based on user-define
 
 # To Do
 
-- triangular and circular grids
+### refactoring
+
+- improve ensapsulation
+
+### performance stuff
+
+- investigate performance - offset calcs are most costly?
+- avoid unneccessary strand-recalculations
+- fuzzy memoization of offset calculations?
+- web workers?
+
+### extra features
+
+- triangular and circular grids, and freeform (including real-time dragging)
 - user configuration

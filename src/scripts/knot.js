@@ -44,6 +44,8 @@ Knot.prototype = {
   addLineBetween(nodeA, nodeB) {
     this.frame.markAsAdjacent(nodeA, nodeB);
     this.frame.drawLines();
+    this.init();
+    this.draw();
   },
   getUnder(point, direction, bound) {
     if (bound === 'out') {

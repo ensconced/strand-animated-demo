@@ -7,9 +7,7 @@ import config from './config.js';
 
 function Drawing() {
   this.knots = [];
-  this.frames = [];
   this.mode = 'add-grid';
-  this.wrapper = document.getElementById('wrapper');
   this.addMouseListeners();
 }
 
@@ -18,9 +16,10 @@ Drawing.prototype = {
     this.boundHandleMouseDown = this.handleMouseDown.bind(this);
     this.boundHandleMouseUp = this.handleMouseUp.bind(this);
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
-    this.wrapper.addEventListener('mousedown', this.boundHandleMouseDown, false);
+    const wrapper = document.getElementById('wrapper');
+    wrapper.addEventListener('mousedown', this.boundHandleMouseDown, false);
     window.addEventListener('mouseup', this.boundHandleMouseUp, false);
-    this.wrapper.addEventListener('mousemove', this.boundHandleMouseMove, false);
+    wrapper.addEventListener('mousemove', this.boundHandleMouseMove, false);
   },
   drawKnot() {
     this.currentKnot = new Knot(this.currentFrame);

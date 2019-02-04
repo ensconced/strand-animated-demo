@@ -7,8 +7,59 @@ import Snap from 'snapsvg';
 import config from './config.js';
 import { closestGraphCoords, pixelCoords } from './mouse.js';
 
+// for keeping track of where we started a drag on the grid
 let dragStart;
 let dragEnd;
+
+// for keeping track of where line currentlyu being drawn started / ends
+let lineStart;
+let lineEnd;
+
+// for keeping track of which knot / frame is currently being manipulated
+let currentKnot;
+let currentFrame;
+
+function handleMouseDown(e) {
+  this.mouseIsDown = true;
+  switch (this.mode) {
+  case 'add-grid':
+    this.startDrawingGrid(e);
+    break;
+  case 'add-line':
+    this.startDrawingLine(relativeCoords(e));
+    break;
+  case 'add-node':
+    this.placeNode(e);
+    break;
+  }
+}
+
+function handleMouseMove(e) {
+  if (this.mouseIsDown) {
+    switch (this.mode) {
+    case 'add-grid':
+      this.dragFrame(e);
+      break;
+    case 'add-line':
+      this.drawUserLine(relativeCoords(e));
+      break;
+    }
+  }
+}
+
+function handleMouseUp(e) {
+  if (e.target.tagName !== 'BUTTON') {
+    this.mouseIsDown = false;
+    switch (this.mode) {
+    case 'add-grid':
+      currentFrame && this.drawKnot();
+      break;
+    case 'add-line':
+      this.finishDrawingLine(e);
+      break;
+    }
+  }
+}
 
 const drawing = {
   init() {
@@ -17,17 +68,17 @@ const drawing = {
     this.addMouseListeners();
   },
   addMouseListeners() {
-    this.boundHandleMouseDown = this.handleMouseDown.bind(this);
-    this.boundHandleMouseUp = this.handleMouseUp.bind(this);
-    this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseDown = handleMouseDown.bind(this);
+    this.handleMouseUp = handleMouseUp.bind(this);
+    this.handleMouseMove = handleMouseMove.bind(this);
     const wrapper = document.getElementById('wrapper');
-    wrapper.addEventListener('mousedown', this.boundHandleMouseDown, false);
-    wrapper.addEventListener('mousemove', this.boundHandleMouseMove, false);
-    window.addEventListener('mouseup', this.boundHandleMouseUp, false);
+    wrapper.addEventListener('mousedown', this.handleMouseDown, false);
+    wrapper.addEventListener('mousemove', this.handleMouseMove, false);
+    window.addEventListener('mouseup', this.handleMouseUp, false);
   },
   drawKnot() {
-    this.currentKnot = new Knot(this.currentFrame);
-    this.knots.push(this.currentKnot);
+    currentKnot = new Knot(currentFrame);
+    this.knots.push(currentKnot);
   },
   addNode(coords) {
     const nodes = [new Node({
@@ -52,16 +103,11 @@ const drawing = {
     });
   },
   drawFrame() {
-    // remove any extant frames
-    //if (this.currentFrame) this.currentFrame.remove();
-    // make 1x1 frame
-    this.currentFrame = new Frame({
+    currentFrame = new Frame({
       initialBox: dragStart,
       finalBox: dragEnd,
     });
-    this.currentFrame.draw();
-    // add the listener for mouse movement
-    this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+    currentFrame.draw();
   },
   startDrawingGrid(e) {
     dragStart = rowAndCol(e);
@@ -73,50 +119,52 @@ const drawing = {
     dragEnd = rowAndCol(e);
     if (!identicalObjects(previousBox, dragEnd)) {
       doIfInGraph(dragEnd, function() {
-        if (this.currentFrame) this.currentFrame.remove();
-        this.currentFrame = new Frame({
+        if (currentFrame) currentFrame.remove();
+        currentFrame = new Frame({
           initialBox: dragStart,
           finalBox: dragEnd,
         });
-        this.currentFrame.draw();
+        currentFrame.draw();
       }.bind(this));
     }
   },
   drawUserLine(toCoords) {
-    this.currentFrame.userLine && this.currentFrame.userLine.remove();
-    this.currentFrame.userLine = Snap('#surface').line(this.lineStart.x, this.lineStart.y, ...toCoords);
-    this.currentFrame.userLine.attr(config.frame);
+    currentFrame.userLine && currentFrame.userLine.remove();
+    currentFrame.userLine = Snap('#surface').line(lineStart.x, lineStart.y, ...toCoords);
+    currentFrame.userLine.attr(config.frame);
   },
   finishDrawingLine(e) {
-    this.currentFrame.userLine && this.currentFrame.userLine.remove();
+    currentFrame.userLine && currentFrame.userLine.remove();
     const coords = relativeCoords(e);
-    this.lineEnd = this.nodeAt(coords);
-    const isValidLine = this.lineEnd && this.lineEnd !== this.lineStart;
-    if (isValidLine && !this.currentFrame.lineExistsBetween(this.lineStart, this.lineEnd)) {
-      this.currentKnot && this.currentKnot.remove();
-      const knotA = this.findKnotWith(this.lineStart);
-      const knotB = this.findKnotWith(this.lineEnd);
+    lineEnd = this.nodeAt(coords);
+    const isValidLine = lineEnd && lineEnd !== lineStart;
+    if (isValidLine && !currentFrame.lineExistsBetween(lineStart, lineEnd)) {
+      currentKnot && currentKnot.remove();
+      const knotA = this.findKnotWith(lineStart);
+      const knotB = this.findKnotWith(lineEnd);
       if (knotA !== knotB) {
-        // need to merge two frames...
-        this.remove(knotA);
-        this.remove(knotB);
-        this.currentKnot = knotA.merge(knotB, this.lineStart, this.lineEnd);
-        this.currentFrame = this.currentKnot.frame;
-        this.knots.push(this.currentKnot);
+        this.mergeKnots(knotA, knotB, lineStart, lineEnd);
       } else {
-        this.currentKnot.addLineBetween(this.lineStart, this.lineEnd);
-        this.currentKnot.init();
-        this.currentKnot.draw();
+        currentKnot.addLineBetween(lineStart, lineEnd);
+        currentKnot.init();
+        currentKnot.draw();
       }
     }
   },
+  mergeKnots(knotA, knotB, startNode, endNode) {
+    // need to merge two frames...
+    this.remove(knotA);
+    this.remove(knotB);
+    currentKnot = knotA.merge(knotB, startNode, endNode);
+    currentFrame = currentKnot.frame;
+    this.knots.push(currentKnot);
+  },
   remove(knot) {
-    knot.frame.remove();
     knot.remove();
     this.knots.splice(this.knots.indexOf(knot), 1);
   },
   nodeAt(coords) {
-    var result;
+    let result;
     this.knots.some(knot => {
       result = knot.frame.findProximalNode(coords);
       if (result) {
@@ -131,51 +179,11 @@ const drawing = {
     });
   },
   startDrawingLine(coords) {
-    this.lineStart = this.nodeAt(coords);
-    this.currentKnot = this.findKnotWith(this.lineStart);
-    this.currentFrame = this.currentKnot.frame;
-    if (this.lineStart) {
+    lineStart = this.nodeAt(coords);
+    currentKnot = this.findKnotWith(lineStart);
+    currentFrame = currentKnot.frame;
+    if (lineStart) {
       this.drawUserLine(coords);
-    }
-  },
-  handleMouseDown(e) {
-    this.mouseIsDown = true;
-    switch (this.mode) {
-    case 'add-grid':
-      this.startDrawingGrid(e);
-      break;
-    case 'add-line':
-      this.startDrawingLine(relativeCoords(e));
-      break;
-    case 'add-node':
-      this.placeNode(e);
-      break;
-    }
-  },
-  handleMouseMove(e) {
-    if (this.mouseIsDown) {
-      switch (this.mode) {
-      case 'add-grid':
-        this.dragFrame(e);
-        break;
-      case 'add-line':
-        this.drawUserLine(relativeCoords(e));
-      }
-    }
-  },
-  handleMouseUp(e) {
-    if (e.target.tagName !== 'BUTTON') {
-      this.mouseIsDown = false;
-      switch (this.mode) {
-      case 'add-grid':
-        if (this.currentFrame) {
-          this.drawKnot();
-        }
-        break;
-      case 'add-line':
-        this.finishDrawingLine(e);
-        break;
-      }
     }
   },
 };

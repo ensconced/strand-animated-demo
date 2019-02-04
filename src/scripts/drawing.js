@@ -38,7 +38,6 @@ Drawing.prototype = {
     this.currentFrame = new Frame({
       initialBox: this.initialBox,
       finalBox: this.finalBox,
-      drawing: this,
     });
     this.currentFrame.draw();
     // add the listener for mouse movement

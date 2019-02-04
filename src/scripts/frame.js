@@ -6,10 +6,10 @@ import { closestGraphCoords, pixelCoords } from './mouse.js';
 import { coordinateSet } from './general-utils.js';
 
 export default function Frame(options) {
-  const { initialBox, finalBox, nodes, adjacencies, drawing } = options;
+  const { initialBox, finalBox, nodes, adjacencies } = options;
   if (initialBox && finalBox) {
     // i.e. if drawn as grid rather than individual nodes and lines...
-    this.initFromBoxExtrema(initialBox, finalBox, drawing);
+    this.initFromBoxExtrema(initialBox, finalBox);
   } else if (nodes && adjacencies) {
     this.nodes = nodes;
     this.adjacencyList = adjacencies;

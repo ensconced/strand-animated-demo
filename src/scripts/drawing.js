@@ -10,13 +10,12 @@ import { closestGraphCoords, pixelCoords } from './mouse.js';
 let dragStart;
 let dragEnd;
 
-function Drawing() {
-  this.knots = [];
-  this.mode = 'add-grid';
-  this.addMouseListeners();
-}
-
-Drawing.prototype = {
+const drawing = {
+  init() {
+    this.knots = [];
+    this.mode = 'add-grid';
+    this.addMouseListeners();
+  },
   addMouseListeners() {
     this.boundHandleMouseDown = this.handleMouseDown.bind(this);
     this.boundHandleMouseUp = this.handleMouseUp.bind(this);
@@ -181,4 +180,4 @@ Drawing.prototype = {
   },
 };
 
-export default Drawing;
+export default drawing;

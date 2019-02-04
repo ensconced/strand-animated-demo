@@ -1,4 +1,4 @@
-import Drawing from './drawing.js';
+import drawing from './drawing.js';
 import Snap from 'snapsvg';
 import { relativeCoords } from './mouse.js';
 import Graph from './graph.js';
@@ -60,8 +60,8 @@ function changeDrawingMode(newMode) {
   return () => drawing.mode = newMode;
 }
 
-const drawing = new Drawing();
 document.addEventListener('DOMContentLoaded', function () {
+  drawing.init();
   ['add-node', 'add-line', 'add-grid'].forEach(function (id) {
     const button = document.getElementById(id);
     button.addEventListener('click', changeDrawingMode(id), false);

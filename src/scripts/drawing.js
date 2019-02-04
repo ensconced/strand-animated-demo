@@ -5,6 +5,9 @@ import { identicalObjects } from './general-utils';
 import Snap from 'snapsvg';
 import config from './config.js';
 
+let dragStart;
+let dragEnd;
+
 function Drawing() {
   this.knots = [];
   this.mode = 'add-grid';
@@ -18,8 +21,8 @@ Drawing.prototype = {
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
     const wrapper = document.getElementById('wrapper');
     wrapper.addEventListener('mousedown', this.boundHandleMouseDown, false);
-    window.addEventListener('mouseup', this.boundHandleMouseUp, false);
     wrapper.addEventListener('mousemove', this.boundHandleMouseMove, false);
+    window.addEventListener('mouseup', this.boundHandleMouseUp, false);
   },
   drawKnot() {
     this.currentKnot = new Knot(this.currentFrame);
@@ -36,28 +39,27 @@ Drawing.prototype = {
     //if (this.currentFrame) this.currentFrame.remove();
     // make 1x1 frame
     this.currentFrame = new Frame({
-      initialBox: this.initialBox,
-      finalBox: this.finalBox,
+      initialBox: dragStart,
+      finalBox: dragEnd,
     });
     this.currentFrame.draw();
     // add the listener for mouse movement
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
   },
   startDrawingGrid(e) {
-    this.initialBox = rowAndCol(e);
-    this.finalBox = this.initialBox;
-    doIfInGraph(this.initialBox, this.drawFrame.bind(this));
+    dragStart = rowAndCol(e);
+    dragEnd = dragStart;
+    doIfInGraph(dragStart, this.drawFrame.bind(this));
   },
   dragFrame(e) {
-    const previousBox = this.finalBox;
-    this.finalBox = rowAndCol(e);
-    if (!identicalObjects(previousBox, this.finalBox)) {
-      doIfInGraph(this.finalBox, function() {
+    const previousBox = dragEnd;
+    dragEnd = rowAndCol(e);
+    if (!identicalObjects(previousBox, dragEnd)) {
+      doIfInGraph(dragEnd, function() {
         if (this.currentFrame) this.currentFrame.remove();
         this.currentFrame = new Frame({
-          initialBox: this.initialBox,
-          finalBox: this.finalBox,
-          drawing: this,
+          initialBox: dragStart,
+          finalBox: dragEnd,
         });
         this.currentFrame.draw();
       }.bind(this));

@@ -2,7 +2,6 @@ import Grid from './grid.js';
 import config from './config.js';
 import Line from './line.js';
 import Node from './node.js';
-import { closestGraphCoords, pixelCoords } from './mouse.js';
 import { coordinateSet } from './general-utils.js';
 
 export default function Frame(options) {
@@ -135,15 +134,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   overlapsExistingNode(pxX, pxY) {
     return this.nodes.some(node => node.hasOverlap(pxX, pxY));
   },
-  addNode(coords) {
-    this.nodes.push(
-      new Node({
-        x: coords[0],
-        y: coords[1],
-        gridSystem: 'square',
-      })
-    );
-  },
   merge(otherFrame) {
     const originalLength = this.nodes.length;
     const nodes = this.nodes.concat(otherFrame.nodes);
@@ -152,16 +142,6 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
     this.nodes = nodes;
     this.adjacencyList = adjacencies;
     return this;
-  },
-  handleNodePlacement(event) {
-    const coords = closestGraphCoords(event);
-    const pxCoords = pixelCoords(coords);
-    if (!this.overlapsExistingNode(...pxCoords)) {
-      this.remove();
-      this.addNode(coords);
-      this.adjacencyList.push([]);
-      this.draw();
-    }
   },
   firstUncrossedLine() {
     return this.lines.find(line => line.uncrossed());

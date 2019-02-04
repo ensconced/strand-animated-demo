@@ -1,9 +1,11 @@
 import Knot from './knot.js';
 import Frame from './frame.js';
+import Node from './node.js';
 import { rowAndCol, doIfInGraph, relativeCoords } from './mouse.js';
 import { identicalObjects } from './general-utils';
 import Snap from 'snapsvg';
 import config from './config.js';
+import { closestGraphCoords, pixelCoords } from './mouse.js';
 
 let dragStart;
 let dragEnd;
@@ -28,11 +30,27 @@ Drawing.prototype = {
     this.currentKnot = new Knot(this.currentFrame);
     this.knots.push(this.currentKnot);
   },
-  addNode(e) {
-    if (!this.currentFrame) {
-      this.currentFrame = new Frame({});
+  addNode(coords) {
+    const nodes = [new Node({
+      x: coords[0],
+      y: coords[1],
+      gridSystem: 'square',
+    })];
+    const frame = new Frame({ nodes: nodes, adjacencies: [[]] });
+    frame.drawLines();
+    this.knots.push(new Knot(frame));
+  },
+  placeNode(e) {
+    const coords = closestGraphCoords(e);
+    const pxCoords = pixelCoords(coords);
+    if (!this.isNodeOverlapping(pxCoords)) {
+      this.addNode(coords);
     }
-    this.currentFrame.handleNodePlacement(e);
+  },
+  isNodeOverlapping(coords) {
+    return this.knots.some(knot => {
+      return knot.frame.overlapsExistingNode(...coords);
+    });
   },
   drawFrame() {
     // remove any extant frames
@@ -131,7 +149,7 @@ Drawing.prototype = {
       this.startDrawingLine(relativeCoords(e));
       break;
     case 'add-node':
-      this.addNode(e);
+      this.placeNode(e);
       break;
     }
   },

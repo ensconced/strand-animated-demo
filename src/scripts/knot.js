@@ -94,17 +94,10 @@ Knot.prototype = {
       strand.forEach((strandElement, i) => {
         // now draw everything except PRs
         if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
-          var point = strandElement.point;
-          if (strandElement.direction === 'R') {
-            this.drawOutline(point.overOutLeft);
-            this.drawOutline(point.overOutRight);
-          } else {
-            this.drawOutline(point.underOutLeft);
-            this.drawOutline(point.underOutRight);
-          }
+          this.drawOffsets(strandElement);
         } else if (strandElement.pr) {
           // here we draw the PRs
-          var pr = new PointedReturn({
+          const pr = new PointedReturn({
             pr: strandElement,
             elements: this.elements,
             middleOutbound: pointPreceding(i, strand).outboundBezier,
@@ -117,7 +110,17 @@ Knot.prototype = {
     this.frame.remove();
     this.frame.draw();
   },
-  drawOutline(outline) {
+  drawOffsets(strandElement) {
+    const point = strandElement.point;
+    if (strandElement.direction === 'R') {
+      this.drawPolyline(point.overOutLeft);
+      this.drawPolyline(point.overOutRight);
+    } else {
+      this.drawPolyline(point.underOutLeft);
+      this.drawPolyline(point.underOutRight);
+    }
+  },
+  drawPolyline(outline) {
     var points = outline.reduce(reducer, []);
     var snp = surface.polyline(points);
     this.elements.push(snp);

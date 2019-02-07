@@ -20,7 +20,7 @@ A website that generates celtic-style knots (*icovellavna*) based on user-define
 
 - investigate performance - offset calcs are most costly?
 - avoid unneccessary strand-recalculations
-- strand calculations are relatively faast - could start doing them before mouseup
+- strand calculations are relatively fast - could start doing them before mouseup
 - fuzzy memoization of offset calculations?
 - web workers?
 

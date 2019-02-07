@@ -8,7 +8,7 @@ import OffsetSketch from './offset-sketch';
 export default function Knot(frame) {
   this.frame = frame;
   this.init();
-  this.draw();
+  //this.draw();
 }
 
 Knot.prototype = {
@@ -18,8 +18,8 @@ Knot.prototype = {
   },
   init() {
     this.elements = [];
-    this.offsetSketches = this.makeOffsets();
-    this.makeOverUnders();
+    //this.offsetSketches = this.makeOffsets();
+    //this.makeOverUnders();
   },
   merge(otherKnot, lineStart, lineEnd) {
     const mergedFrame = this.frame.merge(otherKnot.frame);

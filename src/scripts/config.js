@@ -24,7 +24,7 @@ export default {
     fill: 'none',
     stroke: 'red',
     strokeWidth: 2,
-    strokeOpacity: 1,
+    strokeOpacity: 0.8,
   },
 
   maxStrokeWidth: function() {
@@ -38,9 +38,9 @@ export default {
   nodeStyle: {
     fill: 'blue',
     stroke: 'white',
-    strokeWidth: 2,
-    fillOpacity: 1,
-    radius: 7,
+    strokeWidth: 1,
+    fillOpacity: 0.5,
+    radius: 3,
   },
 
   // necessary to ensure that frame and graph are properly...

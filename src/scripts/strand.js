@@ -18,12 +18,15 @@ export function pointPreceding(index, strand) {
 function addAllElements(frame) {
   strandState.frame = frame;
   strandState.currentLine = frame.firstUncrossedLine();
+  strandState.currentLine.snapObj.attr({stroke: 'black'});
   strandState.direction = initialDirection();
   strandState.targetNode = initialTargetNode();
   addElement.call(this, frame);
 
   while (true) {
+    strandState.currentLine.snapObj.attr({stroke: 'grey'});
     strandState.currentLine = nextLine();
+    strandState.currentLine.snapObj.attr({stroke: 'black'});
     strandState.direction = oppositeDirection();
     strandState.targetNode = nextTargetNode();
     addNextPoint.call(this);
@@ -37,7 +40,7 @@ function addElement() {
     pr: false,
   });
 
-  paint({x: strandElement.point.coords[0], y: strandElement.point.coords[1]}, 'green');
+  paint(strandElement.point.coords, 'green');
 
   add.call(this, strandElement);
 
@@ -51,6 +54,7 @@ function addElement() {
       y: prCoords[1],
       pr: oppositeDirection(),
     });
+    paint(prCoords, 'purple');
   }
   logCrossing();
 }
@@ -104,6 +108,7 @@ function getApexCoords(startPoint, endPoint) {
   return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
 }
 function nextLine() {
+  //debugger;
   const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
   var orderedLinesOut = roundabout.slice().sort(compareByAngle);
   var inIndex = orderedLinesOut.indexOf(strandState.currentLine);

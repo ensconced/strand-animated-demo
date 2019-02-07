@@ -2,13 +2,13 @@ import { collectionIntersect, format, mutate, reducer } from './knot-utils.js';
 import surface from './main.js';
 import { Strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
-//import Contour from './contour.js';
-//import OffsetSketch from './offset-sketch';
+import Contour from './contour.js';
+import OffsetSketch from './offset-sketch';
 
 export default function Knot(frame) {
   this.frame = frame;
   this.init();
-  //this.draw();
+  this.draw();
 }
 
 Knot.prototype = {
@@ -19,7 +19,7 @@ Knot.prototype = {
   init() {
     this.elements = [];
     this.offsetSketches = this.makeOffsets();
-    //this.makeOverUnders();
+    this.makeOverUnders();
   },
   merge(otherKnot, lineStart, lineEnd) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
@@ -33,13 +33,14 @@ Knot.prototype = {
     const strands = [];
     while (this.frame.lines.some(line => line.uncrossed())) {
       strands.push(Strand(this.frame));
+      debugger;
     }
     return strands;
   },
   makeOffsets() {
     this.strands = this.makeStrands();
-    //this.contours = this.strands.map(strand => Contour(strand));
-    //return this.contours.map(contour => new OffsetSketch(contour));
+    this.contours = this.strands.map(strand => Contour(strand));
+    return this.contours.map(contour => new OffsetSketch(contour));
   },
   addLineBetween(nodeA, nodeB) {
     this.frame.markAsAdjacent(nodeA, nodeB);
@@ -105,6 +106,7 @@ Knot.prototype = {
           });
           pr.draw();
         }
+        debugger;
       });
     });
     this.frame.remove();

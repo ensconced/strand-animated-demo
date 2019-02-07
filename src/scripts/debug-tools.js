@@ -16,11 +16,18 @@ function paintBezier(bezier, color) {
 }
 
 function paintPoint(point, color) {
-  const circle = Snap(surface).circle(point.x, point.y, 5);
+  const circle = Snap(surface).circle(point.x, point.y, 3);
   circle.attr({ fill: color, stroke: color });
 }
 
 export function paint(item, color) {
+  if (Array.isArray(item) && typeof item[0] === 'number') {
+    paint({
+      x: item[0],
+      y: item[1],
+    }, color);
+    return;
+  }
   if (item.x !== undefined && item.y !== undefined) {
     paintPoint(item, color);
     return;

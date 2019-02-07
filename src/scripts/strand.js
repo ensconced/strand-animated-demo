@@ -1,5 +1,5 @@
 import StrandElement from './strand-element.js';
-import { paint } from './debug-tools.js';
+import { paint, paintArrow } from './debug-tools.js';
 
 const strandState = {};
 
@@ -16,18 +16,23 @@ export function pointPreceding(index, strand) {
 }
 
 function addAllElements(frame) {
-  debugger;
+  let arrow;
   strandState.frame = frame;
   strandState.currentLine = frame.firstUncrossedLine();
-  strandState.currentLine.snapObj.attr({stroke: 'black'});
   strandState.direction = initialDirection();
   strandState.targetNode = initialTargetNode();
+  debugger;
+  strandState.currentLine.snapObj.attr({ stroke: 'black' });
+  arrow = paintArrow(strandState.currentLine, true);
   addElement.call(this, frame);
 
   while (true) {
-    strandState.currentLine.snapObj.attr({stroke: 'grey'});
+    debugger;
+    strandState.currentLine.snapObj.attr({ stroke: 'red' });
     strandState.currentLine = nextLine();
-    strandState.currentLine.snapObj.attr({stroke: 'black'});
+    strandState.currentLine.snapObj.attr({ stroke: 'black' });
+    arrow && arrow.remove();
+    arrow = paintArrow(strandState.currentLine, goingBackwards());
     strandState.direction = oppositeDirection();
     strandState.targetNode = nextTargetNode();
     addNextPoint.call(this);
@@ -109,7 +114,6 @@ function getApexCoords(startPoint, endPoint) {
   return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
 }
 function nextLine() {
-  debugger;
   const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
   var orderedLinesOut = roundabout.slice().sort(compareByAngle);
   var inIndex = orderedLinesOut.indexOf(strandState.currentLine);

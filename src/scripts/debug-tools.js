@@ -47,6 +47,28 @@ export function paint(item, color) {
   }
 }
 
+export function paintArrow(line, forwards) {
+  let start;
+  let finish;
+  if (forwards) {
+    start = line.startNode;
+    finish = line.endNode;
+  } else {
+    finish = line.startNode;
+    start = line.endNode;
+  }
+  const lineVector = [finish.x - start.x, finish.y - start.y];
+  const headStart = [start.x + (lineVector[0]) * 0.9, start.y + (lineVector[1]) * 0.9];
+  let normal = [lineVector[1] * 0.1, -lineVector[0] * 0.1];
+  const normalLength = (normal[0]**2 + normal[1]**2)**0.5;
+  normal = normal.map(x => 5 * x / normalLength);
+  const pointA = [headStart[0] + normal[0], headStart[1] + normal[1]];
+  const pointB = [headStart[0] - normal[0], headStart[1] - normal[1]];
+  const a = Snap(surface).polyline(...pointA, finish.x, finish.y, ...pointB);
+  a.attr({ stroke: 'black', strokeWidth: 2, fill: 'none'});
+  return a;
+}
+
 export function rainbowPaint(bezCollection) {
   const rainbow = ['red', 'blue', 'green', 'orange', 'purple'];
   bezCollection.forEach((bez) => {

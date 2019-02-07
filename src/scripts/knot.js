@@ -32,10 +32,7 @@ Knot.prototype = {
   },
   makeStrands() {
     const strands = [];
-    //while (this.frame.lines.some(line => line.uncrossed())) {
     strands.push(strand(this.frame));
-    //debugger;
-    //}
     return strands;
   },
   makeOffsets() {
@@ -43,11 +40,10 @@ Knot.prototype = {
     this.contours = this.strands.map(strand => Contour(strand));
     debugger;
     paint(this.contours[0].map(c => c.outboundBezier), 'green');
-    Array.from(document.querySelectorAll('line[stroke="#ff0000"], line[stroke="#000000"]')).forEach(function (line) {
+    Array.from(document.querySelectorAll('line[stroke="#ff0000"], line[stroke="#000000"], line[stroke="#0000ff"], polyline[stroke="#0000ff"]')).forEach(function (line) {
       line.remove();
     });
     debugger;
-    //return this.contours.map(contour => new OffsetSketch(contour));
   },
   addLineBetween(nodeA, nodeB) {
     this.frame.markAsAdjacent(nodeA, nodeB);

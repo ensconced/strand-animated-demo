@@ -53,15 +53,15 @@ export function paint(item, color) {
   }
 }
 
-export function paintArrow(line, forwards) {
+export function paintArrow(line, backwards) {
   let start;
   let finish;
-  if (forwards) {
-    start = line.startNode;
-    finish = line.endNode;
-  } else {
+  if (backwards) {
     finish = line.startNode;
     start = line.endNode;
+  } else {
+    start = line.startNode;
+    finish = line.endNode;
   }
   const lineVector = [finish.x - start.x, finish.y - start.y];
   const headStart = [start.x + (lineVector[0]) * 0.9, start.y + (lineVector[1]) * 0.9];
@@ -71,7 +71,7 @@ export function paintArrow(line, forwards) {
   const pointA = [headStart[0] + normal[0], headStart[1] + normal[1]];
   const pointB = [headStart[0] - normal[0], headStart[1] - normal[1]];
   const a = Snap(surface).polyline(...pointA, finish.x, finish.y, ...pointB);
-  a.attr({ stroke: 'black', strokeWidth: 2, fill: 'none'});
+  a.attr({ stroke: 'blue', strokeWidth: 2, fill: 'none'});
   return a;
 }
 

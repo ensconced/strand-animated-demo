@@ -42,14 +42,12 @@ Line.prototype = {
     return [newX, newY];
   },
   angle(options) {
-    var vector = this.vector();
+    let vector = this.vector();
     if (options.reverse) {
-      vector = vector.map(coord => coord * -1);
+      vector = vector.map(coord => -coord);
     }
-    var result = Math.atan2(vector[1], vector[0]); // return value is in radians
-    //result += 2 * Math.PI
-    //if (options.reverse) result *= -1;
-    return result; //% (2 * Math.PI);
+    const result = Math.atan2(vector[1], vector[0]);
+    return result;
   },
   angleOutFrom(node) {
     if (this.startX === node.x && this.startY === node.y) {
@@ -59,16 +57,12 @@ Line.prototype = {
     }
   },
   angleOutCP(options) {
-    var vect = this.vector();
+    let vect = this.vector();
     if (options.reverse) {
-      vect = vect.map(coord => coord * -1);
+      vect = vect.map(coord => -coord);
     }
-    var resultant;
-    if (options.direction === 'R') {
-      resultant = this.rotateAboutOrigin(vect, Math.PI / 4);
-    } else if (options.direction === 'L') {
-      resultant = this.rotateAboutOrigin(vect, -Math.PI / 4);
-    }
+    const angle = options.direction === 'R' ? Math.PI / 4 : -Math.PI / 4;
+    const resultant = this.rotateAboutOrigin(vect, angle);
     return Math.atan2(resultant[1], resultant[0]);
   },
   visits(node) {

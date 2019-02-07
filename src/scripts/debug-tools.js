@@ -10,7 +10,7 @@ function paintBezier(bezier, color) {
   const svgBez = Snap(surface).path(path);
   svgBez.attr({
     stroke: color,
-    strokeWidth: 2,
+    strokeWidth: 5,
     fill: 'none',
   });
 }
@@ -18,6 +18,12 @@ function paintBezier(bezier, color) {
 function paintPoint(point, color) {
   const circle = Snap(surface).circle(point.x, point.y, 3);
   circle.attr({ fill: color, stroke: color });
+}
+
+export function paintLine(coordsA, coordsB, color) {
+  const svgLine = Snap(surface).line(...coordsA, ...coordsB);
+  svgLine.attr({ stroke: color, strokeWidth: 3 });
+  return svgLine;
 }
 
 export function paint(item, color) {

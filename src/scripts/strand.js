@@ -1,93 +1,109 @@
 import StrandElement from './strand-element.js';
-import { paint, paintArrow } from './debug-tools.js';
+import { paint, paintLine, paintArrow } from './debug-tools.js';
 
-const strandState = {};
+let currentLine;
+let frame;
+let direction;
+let targetNode;
 
-export function Strand(frame) {
+function strand(frame) {
   const result = [];
   addAllElements.call(result, frame);
   return result;
 }
-export function pointFollowing(index, strand) {
+
+function pointFollowing(index, strand) {
   return strand[(index + 1) % strand.length];
 }
-export function pointPreceding(index, strand) {
+function pointPreceding(index, strand) {
   return strand[index - 1] || strand[strand.length - 1];
 }
 
-function addAllElements(frame) {
+function addAllElements(framey) {
   let arrow;
-  strandState.frame = frame;
-  strandState.currentLine = frame.firstUncrossedLine();
-  strandState.direction = initialDirection();
-  strandState.targetNode = initialTargetNode();
+  frame = framey;
+  currentLine = frame.firstUncrossedLine();
+  direction = initialDirection();
+  targetNode = initialTargetNode();
   debugger;
-  strandState.currentLine.snapObj.attr({ stroke: 'black' });
-  arrow = paintArrow(strandState.currentLine, true);
+  currentLine.snapObj.attr({ stroke: 'black' });
+  arrow = paintArrow(currentLine, true);
   addElement.call(this, frame);
 
   while (true) {
     debugger;
-    strandState.currentLine.snapObj.attr({ stroke: 'red' });
-    strandState.currentLine = nextLine();
-    strandState.currentLine.snapObj.attr({ stroke: 'black' });
+    currentLine.snapObj.attr({ stroke: 'red' });
+    currentLine = nextLine();
+    currentLine.snapObj.attr({ stroke: 'black' });
     arrow && arrow.remove();
-    arrow = paintArrow(strandState.currentLine, goingBackwards());
-    strandState.direction = oppositeDirection();
-    strandState.targetNode = nextTargetNode();
+    arrow = paintArrow(currentLine, goingBackwards());
+    direction = oppositeDirection();
+    targetNode = nextTargetNode();
     addNextPoint.call(this);
     if (endOfStrand()) break;
   }
+
+  paintLine([this[this.length - 1].x, this[this.length - 1].y], [this[0].x, this[0].y], 'black');
+  debugger;
 }
 function addElement() {
   const strandElement = new StrandElement({
-    direction: strandState.direction,
-    point: strandState.currentLine.crossingPoint,
+    direction: direction,
+    point: currentLine.crossingPoint,
     pr: false,
   });
 
   paint(strandElement.point.coords, 'green');
+  if (this[this.length - 1]) {
+    paintLine([strandElement.x, strandElement.y], [this[this.length - 1].x, this[this.length - 1].y], 'black');
+  }
 
   add.call(this, strandElement);
 
-  if (pointedReturn(strandState.frame)) {
-    var startCoords = strandState.currentLine.crossingPoint.coords;
-    var endCoords = nextLine(strandState.frame).crossingPoint.coords;
+  if (pointedReturn(frame)) {
+    var startCoords = currentLine.crossingPoint.coords;
+    var endCoords = nextLine().crossingPoint.coords;
     var prCoords = getApexCoords(startCoords, endCoords);
+
+    paint(prCoords, 'purple');
+    if (this[this.length - 1]) {
+      paintLine(prCoords, [this[this.length - 1].x, this[this.length - 1].y], 'black');
+    }
+
     add.call(this, {
       point: {},
       x: prCoords[0],
       y: prCoords[1],
       pr: oppositeDirection(),
     });
-    paint(prCoords, 'purple');
+    debugger;
   }
   logCrossing();
 }
 function currentBearing() {
-  return strandState.currentLine.angleOutCP({
-    direction: strandState.direction,
+  return currentLine.angleOutCP({
+    direction: direction,
     reverse: goingBackwards(),
   });
 }
 function oppositeDirection() {
-  return strandState.direction === 'R' ? 'L' : 'R';
+  return direction === 'R' ? 'L' : 'R';
 }
 function addNextPoint(frame) {
   addElement.call(this, frame);
 }
 function logCrossing() {
-  if (strandState.direction === 'R') {
-    strandState.currentLine.crossingPoint.crossedRight = true;
+  if (direction === 'R') {
+    currentLine.crossingPoint.crossedRight = true;
   } else {
-    strandState.currentLine.crossingPoint.crossedLeft = true;
+    currentLine.crossingPoint.crossedLeft = true;
   }
 }
-function traverseNextBackwards(frame) {
-  return nextLine(frame).endNode.sameNode(strandState.targetNode);
+function traverseNextBackwards() {
+  return nextLine().endNode.sameNode(targetNode);
 }
 function compareByAngle(lineA, lineB) {
-  if (lineA.angleOutFrom(strandState.targetNode) < lineB.angleOutFrom(strandState.targetNode)) {
+  if (lineA.angleOutFrom(targetNode) < lineB.angleOutFrom(targetNode)) {
     return -1;
   } else {
     return 1;
@@ -95,30 +111,30 @@ function compareByAngle(lineA, lineB) {
 }
 function nextTargetNode() {
   if (goingBackwards()) {
-    return strandState.currentLine.endNode;
+    return currentLine.endNode;
   } else {
-    return strandState.currentLine.startNode;
+    return currentLine.startNode;
   }
 }
 function endOfStrand() {
-  return nextLine(strandState.frame).crossingPoint.crossed(oppositeDirection());
+  return nextLine().crossingPoint.crossed(oppositeDirection());
 }
 function getApexCoords(startPoint, endPoint) {
   var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
   var normal;
-  if (strandState.direction === 'R') {
+  if (direction === 'R') {
     normal = [-startToEnd[1], startToEnd[0]];
-  } else if (strandState.direction === 'L') {
+  } else if (direction === 'L') {
     normal = [startToEnd[1], -startToEnd[0]];
   }
   return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
 }
 function nextLine() {
-  const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
+  const roundabout = frame.linesOutFrom(targetNode);
   var orderedLinesOut = roundabout.slice().sort(compareByAngle);
-  var inIndex = orderedLinesOut.indexOf(strandState.currentLine);
+  var inIndex = orderedLinesOut.indexOf(currentLine);
 
-  if (strandState.direction === 'R') {
+  if (direction === 'R') {
     // pad out list with first element...
     // to allow going all way thru to start again
     var previousLine = orderedLinesOut[inIndex - 1];
@@ -130,25 +146,27 @@ function nextLine() {
   }
 }
 function nextBearing() {
-  return nextLine(strandState.frame).angleOutCP({
+  return nextLine().angleOutCP({
     direction: oppositeDirection(),
-    reverse: traverseNextBackwards(strandState.frame),
+    reverse: traverseNextBackwards(),
   });
 }
 function goingBackwards() {
-  return strandState.currentLine.startNode.sameNode(strandState.targetNode);
+  return currentLine.startNode.sameNode(targetNode);
 }
 function pointedReturn() {
-  var angleDelta = Math.abs(currentBearing() - nextBearing(strandState.frame));
-  var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
+  const angleDelta = Math.abs(currentBearing() - nextBearing());
+  const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
   return smallerAngle > 1.6;
 }
 function initialDirection() {
-  return strandState.currentLine.crossingPoint.uncrossedDirection();
+  return currentLine.crossingPoint.uncrossedDirection();
 }
 function initialTargetNode() {
-  return strandState.currentLine.endNode;
+  return currentLine.endNode;
 }
 function add(point) {
   this.push(point);
 }
+
+export { strand, pointPreceding, pointFollowing };

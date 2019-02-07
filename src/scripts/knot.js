@@ -1,6 +1,6 @@
 import { collectionIntersect, format, mutate, reducer } from './knot-utils.js';
 import surface from './main.js';
-import { Strand, pointFollowing, pointPreceding } from './strand.js';
+import { strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
 //import OffsetSketch from './offset-sketch';
@@ -33,7 +33,7 @@ Knot.prototype = {
   makeStrands() {
     const strands = [];
     //while (this.frame.lines.some(line => line.uncrossed())) {
-    strands.push(Strand(this.frame));
+    strands.push(strand(this.frame));
     //debugger;
     //}
     return strands;
@@ -41,7 +41,12 @@ Knot.prototype = {
   makeOffsets() {
     this.strands = this.makeStrands();
     this.contours = this.strands.map(strand => Contour(strand));
+    debugger;
     paint(this.contours[0].map(c => c.outboundBezier), 'green');
+    Array.from(document.querySelectorAll('line[stroke="#ff0000"], line[stroke="#000000"]')).forEach(function (line) {
+      line.remove();
+    });
+    debugger;
     //return this.contours.map(contour => new OffsetSketch(contour));
   },
   addLineBetween(nodeA, nodeB) {

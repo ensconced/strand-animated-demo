@@ -3,7 +3,8 @@ import surface from './main.js';
 import { Strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
-import OffsetSketch from './offset-sketch';
+//import OffsetSketch from './offset-sketch';
+import { paint } from './debug-tools.js';
 
 export default function Knot(frame) {
   this.frame = frame;
@@ -19,7 +20,7 @@ Knot.prototype = {
   init() {
     this.elements = [];
     this.offsetSketches = this.makeOffsets();
-    this.makeOverUnders();
+    //this.makeOverUnders();
   },
   merge(otherKnot, lineStart, lineEnd) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
@@ -31,16 +32,17 @@ Knot.prototype = {
   },
   makeStrands() {
     const strands = [];
-    while (this.frame.lines.some(line => line.uncrossed())) {
-      strands.push(Strand(this.frame));
-      debugger;
-    }
+    //while (this.frame.lines.some(line => line.uncrossed())) {
+    strands.push(Strand(this.frame));
+    //debugger;
+    //}
     return strands;
   },
   makeOffsets() {
     this.strands = this.makeStrands();
     this.contours = this.strands.map(strand => Contour(strand));
-    return this.contours.map(contour => new OffsetSketch(contour));
+    paint(this.contours[0].map(c => c.outboundBezier), 'green');
+    //return this.contours.map(contour => new OffsetSketch(contour));
   },
   addLineBetween(nodeA, nodeB) {
     this.frame.markAsAdjacent(nodeA, nodeB);

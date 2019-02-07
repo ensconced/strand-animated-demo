@@ -16,6 +16,7 @@ export function pointPreceding(index, strand) {
 }
 
 function addAllElements(frame) {
+  debugger;
   strandState.frame = frame;
   strandState.currentLine = frame.firstUncrossedLine();
   strandState.currentLine.snapObj.attr({stroke: 'black'});
@@ -108,7 +109,7 @@ function getApexCoords(startPoint, endPoint) {
   return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
 }
 function nextLine() {
-  //debugger;
+  debugger;
   const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
   var orderedLinesOut = roundabout.slice().sort(compareByAngle);
   var inIndex = orderedLinesOut.indexOf(strandState.currentLine);

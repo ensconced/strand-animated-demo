@@ -16,7 +16,7 @@ function paintBezier(bezier, color) {
 }
 
 function paintPoint(point, color) {
-  const circle = Snap(surface).circle(point.x, point.y, 2);
+  const circle = Snap(surface).circle(point.x, point.y, 5);
   circle.attr({ fill: color, stroke: color });
 }
 

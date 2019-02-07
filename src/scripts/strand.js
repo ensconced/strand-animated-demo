@@ -1,4 +1,5 @@
 import StrandElement from './strand-element.js';
+import { paint } from './debug-tools.js';
 
 const strandState = {};
 
@@ -30,11 +31,15 @@ function addAllElements(frame) {
   }
 }
 function addElement() {
-  add.call(this, new StrandElement({
+  const strandElement = new StrandElement({
     direction: strandState.direction,
     point: strandState.currentLine.crossingPoint,
     pr: false,
-  }));
+  });
+
+  paint({x: strandElement.point.coords[0], y: strandElement.point.coords[1]}, 'green');
+
+  add.call(this, strandElement);
 
   if (pointedReturn(strandState.frame)) {
     var startCoords = strandState.currentLine.crossingPoint.coords;

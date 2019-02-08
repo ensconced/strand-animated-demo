@@ -40,7 +40,7 @@ Knot.prototype = {
     this.contours = this.strands.map(strand => Contour(strand));
     debugger;
     paint(this.contours[0].map(c => c.outboundBezier), 'green');
-    Array.from(document.querySelectorAll('line[stroke="#ff0000"], line[stroke="#000000"], line[stroke="#0000ff"], polyline[stroke="#0000ff"]')).forEach(function (line) {
+    Array.from(document.querySelectorAll('line:not([stroke="#808080"]), polyline[stroke="#0000ff"]')).forEach(function (line) {
       line.remove();
     });
     debugger;

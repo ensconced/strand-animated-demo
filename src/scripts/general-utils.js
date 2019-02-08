@@ -18,3 +18,7 @@ export function coordinateSet({ leftmost, rightmost, topmost, bottommost }) {
 export function distanceBetween(coordsA, coordsB) {
   return ((coordsA[0] - coordsB[0])**2 + (coordsA[1] - coordsB[1])**2)**0.5;
 }
+
+export function normal(vector) {
+  return [-vector[1], vector[0]];
+}

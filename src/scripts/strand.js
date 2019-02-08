@@ -1,5 +1,5 @@
-import StrandElement from './strand-element.js';
 import { paint, paintLine, paintArrow } from './debug-tools.js';
+import { normal } from './general-utils.js';
 
 let arrow;
 let currentLine;
@@ -11,7 +11,6 @@ function strand(basisFrame) {
   const result = [];
   frame = basisFrame;
   init.call(result);
-  debugger;
   addAllElements.call(result);
   return result;
 }
@@ -24,15 +23,9 @@ function init() {
   arrow = showArrow();
   addElement.call(this);
 }
-function pointFollowing(index, strand) {
-  return strand[(index + 1) % strand.length];
-}
-function pointPreceding(index, strand) {
-  return strand[index - 1] || strand[strand.length - 1];
-}
 
 function addAllElements() {
-  while (!strandCompleted()) {
+  while (!strandIsComplete()) {
     debugger;
     currentLine = nextLine();
     direction = oppositeDirection();
@@ -40,24 +33,50 @@ function addAllElements() {
     arrow = showArrow();
     addElement.call(this);
   }
-  showLink.call(this, [this[0].x, this[0].y]);
+  showLastLink.call(this);
   debugger;
 }
+
 function addElement() {
-  const strandElement = new StrandElement({
-    direction,
-    point: currentLine.crossingPoint,
-    pr: false,
-  });
-
-  showLink.call(this, strandElement.point.coords);
-  this.push(strandElement);
-
+  addCrossingPoint.call(this);
   if (pointedReturnIsRequired()) {
-    addPointedReturn.call(this);
     debugger;
+    addPointedReturn.call(this);
   }
   logCrossing();
+}
+
+function nextLine() {
+  const outboundLines = frame.linesOutFrom(targetNode);
+  const roundabout = outboundLines.slice().sort(compareAngles);
+  const entryIndex = roundabout.indexOf(currentLine);
+  if (direction === 'R') {
+    return lastExit(roundabout, entryIndex);
+  } else {
+    return firstExit(roundabout, entryIndex);
+  }
+}
+
+function firstExit(roundabout, entryIndex) {
+  const nextExit = roundabout[entryIndex + 1];
+  const firstExit = roundabout[0];
+  return nextExit || firstExit;
+}
+
+function lastExit(roundabout, entryIndex) {
+  const previousExit = roundabout[entryIndex - 1];
+  const lastExit = roundabout[roundabout.length - 1];
+  return previousExit || lastExit;
+}
+
+function getApexCoords(startPoint, endPoint) {
+  showApexGeometry(startPoint, endPoint);
+  const startToEnd = [0, 1].map(x => endPoint[x] - startPoint[x]);
+  let perp = normal(startToEnd);
+  if (direction === 'L') {
+    perp = normal.map(x => -x);
+  }
+  return startPoint.map((coord, i) => coord + startToEnd[i] / 2 + perp[i]);
 }
 
 function addPointedReturn() {
@@ -67,11 +86,20 @@ function addPointedReturn() {
   showLink.call(this, prCoords);
 
   this.push({
-    point: {},
     x: prCoords[0],
     y: prCoords[1],
     pr: oppositeDirection(),
   });
+}
+
+function addCrossingPoint() {
+  const strandElement = {
+    direction,
+    x: currentLine.crossingPoint.coords[0],
+    y: currentLine.crossingPoint.coords[1],
+  };
+  showLink.call(this, currentLine.crossingPoint.coords);
+  this.push(strandElement);
 }
 
 function currentBearing() {
@@ -80,76 +108,65 @@ function currentBearing() {
     reverse: goingBackwards(),
   });
 }
+
 function oppositeDirection() {
   return direction === 'R' ? 'L' : 'R';
 }
+
 function logCrossing() {
-  if (direction === 'R') {
-    currentLine.crossingPoint.crossedRight = true;
-  } else {
-    currentLine.crossingPoint.crossedLeft = true;
-  }
+  currentLine.crossingPoint[direction === 'R' ? 'crossedRight' : 'crossedLeft'] = true;
 }
+
 function traverseNextBackwards() {
   return nextLine().endNode.sameNode(targetNode);
 }
+
 function compareAngles(lineA, lineB) {
   return lineA.angleOutFrom(targetNode) - lineB.angleOutFrom(targetNode);
 }
+
 function nextTargetNode() {
   return goingBackwards() ? currentLine.endNode : currentLine.startNode;
 }
-function strandCompleted() {
+
+function strandIsComplete() {
   return nextLine().crossingPoint.crossed(oppositeDirection());
 }
-function getApexCoords(startPoint, endPoint) {
-  const startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
-  let normal;
-  if (direction === 'R') {
-    normal = [-startToEnd[1], startToEnd[0]];
-  } else if (direction === 'L') {
-    normal = [startToEnd[1], -startToEnd[0]];
-  }
-  return [startPoint[0] + startToEnd[0] / 2 + normal[0], startPoint[1] + startToEnd[1] / 2 + normal[1]];
-}
-function nextLine() {
-  const roundabout = frame.linesOutFrom(targetNode);
-  const orderedLinesOut = roundabout.slice().sort(compareAngles);
-  const inIndex = orderedLinesOut.indexOf(currentLine);
-  if (direction === 'R') {
-    const previousLine = orderedLinesOut[inIndex - 1];
-    const lastLine = orderedLinesOut[orderedLinesOut.length - 1];
-    return previousLine || lastLine;
-  } else {
-    orderedLinesOut.push(orderedLinesOut[0]);
-    return orderedLinesOut[inIndex + 1];
-  }
-}
+
 function nextBearing() {
   return nextLine().angleOutCP({
     direction: oppositeDirection(),
     reverse: traverseNextBackwards(),
   });
 }
+
 function goingBackwards() {
   return currentLine.startNode.sameNode(targetNode);
 }
+
 function pointedReturnIsRequired() {
   const angleDelta = Math.abs(currentBearing() - nextBearing());
   const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
   return smallerAngle > 1.6;
 }
+
 function initialDirection() {
   return currentLine.crossingPoint.uncrossedDirection();
 }
+
 function initialTargetNode() {
   return currentLine.endNode;
 }
+
 function showLink(coords) {
   paint(coords, 'green');
   if (this[this.length - 1]) {
     paintLine(coords, [this[this.length - 1].x, this[this.length - 1].y], 'black');
   }
+}
+
+function showLastLink() {
+  showLink.call(this, [this[0].x, this[0].y]);
 }
 
 function showArrow() {
@@ -158,4 +175,25 @@ function showArrow() {
   arrow && arrow.remove();
   return paintArrow(currentLine, goingBackwards());
 }
+
+function pointFollowing(index, strand) {
+  return strand[(index + 1) % strand.length];
+}
+
+function pointPreceding(index, strand) {
+  return strand[index - 1] || strand[strand.length - 1];
+}
+
+function showApexGeometry(startPoint, endPoint) {
+  const startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
+  paintLine(startPoint, endPoint, 'purple');
+  let normal = [-startToEnd[1], startToEnd[0]];
+  if (direction === 'L') {
+    normal = normal.map(x => -x);
+  }
+  const halfway = startPoint.map((coord, i) => coord + startToEnd[i] / 2);
+  const apex = startPoint.map((coord, i) => coord + startToEnd[i] / 2 + normal[i]);
+  paintLine(halfway, apex, 'purple');
+}
+
 export { strand, pointPreceding, pointFollowing };

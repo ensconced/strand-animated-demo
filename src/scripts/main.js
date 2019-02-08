@@ -59,16 +59,8 @@ function setFrameType() {
   }
 }
 
-function changeDrawingMode(newMode) {
-  return () => drawing.mode = newMode;
-}
-
 document.addEventListener('DOMContentLoaded', function () {
   drawing.init();
-  ['add-node', 'add-line', 'add-grid'].forEach(function (id) {
-    const button = document.getElementById(id);
-    button.addEventListener('click', changeDrawingMode(id), false);
-  });
   setFrameType();
   const adjacencyList = [[1, 3], [0, 2, 4, 5, 3], [1, 5], [0, 4, 6, 1, 7], [1, 3, 5, 7], [2, 4, 8, 1, 7], [3, 7], [4, 6, 8, 3, 5], [5, 7]];
   const arr = [{ x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }, { x: 3, y: 2 }, { x: 3, y: 3 }, { x: 3, y: 4 }, { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 4 }];

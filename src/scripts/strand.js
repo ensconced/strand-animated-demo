@@ -75,7 +75,7 @@ function getApexCoords(startPoint, endPoint) {
   const startToEnd = [0, 1].map(x => endPoint[x] - startPoint[x]);
   let perp = normal(startToEnd);
   if (direction === 'L') {
-    perp = normal.map(x => -x);
+    perp = normal.map(coord => -coord);
   }
   return startPoint.map((coord, i) => coord + startToEnd[i] / 2 + perp[i]);
 }

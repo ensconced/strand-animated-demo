@@ -1,6 +1,7 @@
 import { paint, paintLine, paintArrow } from './debug-tools.js';
 import { normal } from './general-utils.js';
 
+const PR_LIMIT_THETA = 1.6;
 let arrow;
 let currentLine;
 let frame;
@@ -147,7 +148,7 @@ function goingBackwards() {
 function pointedReturnIsRequired() {
   const angleDelta = Math.abs(currentBearing() - nextBearing());
   const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
-  return smallerAngle > 1.6;
+  return smallerAngle > PR_LIMIT_THETA;
 }
 
 function initialDirection() {

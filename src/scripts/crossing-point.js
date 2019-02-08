@@ -3,7 +3,6 @@ import StrandElement from './strand-element.js';
 
 export default function CrossingPoint(startX, startY, endX, endY, line) {
   this.line = line;
-  // use proper getters / setters...
   this.crossedLeft = false;
   this.crossedRight = false;
   this.coords = [(startX + endX) / 2, (startY + endY) / 2];

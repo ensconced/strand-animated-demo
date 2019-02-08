@@ -9,6 +9,7 @@ let direction;
 let targetNode;
 
 function strand(basisFrame) {
+  debugger;
   const result = [];
   frame = basisFrame;
   init.call(result);
@@ -17,25 +18,34 @@ function strand(basisFrame) {
 }
 
 function init() {
+  // find a line that is uncrossed either in R or L direction
   currentLine = frame.firstUncrossedLine();
+
+  // choose the uncrossed direction
   direction = initialDirection();
-  targetNode = initialTargetNode();
-  debugger;
+
+  targetNode = currentLine.endNode;
   arrow = showArrow();
+  debugger;
   addElement.call(this);
 }
 
 function addAllElements() {
+  debugger;
   while (!strandIsComplete()) {
-    debugger;
-    currentLine = nextLine();
-    direction = oppositeDirection();
-    targetNode = nextTargetNode();
+    proceed();
     arrow = showArrow();
     addElement.call(this);
   }
   showLastLink.call(this);
   debugger;
+}
+
+function proceed() {
+  debugger;
+  currentLine = nextLine();
+  direction = oppositeDirection();
+  targetNode = nextTargetNode();
 }
 
 function addElement() {
@@ -49,29 +59,28 @@ function addElement() {
 
 function nextLine() {
   const outboundLines = frame.linesOutFrom(targetNode);
-  const roundabout = outboundLines.slice().sort(compareAngles);
+  const roundabout = outboundLines.sort(compareAngles);
   const entryIndex = roundabout.indexOf(currentLine);
   if (direction === 'R') {
-    return lastExit(roundabout, entryIndex);
+    return rightTurn(roundabout, entryIndex);
   } else {
-    return firstExit(roundabout, entryIndex);
+    return leftTurn(roundabout, entryIndex);
   }
 }
 
-function firstExit(roundabout, entryIndex) {
+function leftTurn(roundabout, entryIndex) {
   const nextExit = roundabout[entryIndex + 1];
   const firstExit = roundabout[0];
   return nextExit || firstExit;
 }
 
-function lastExit(roundabout, entryIndex) {
+function rightTurn(roundabout, entryIndex) {
   const previousExit = roundabout[entryIndex - 1];
   const lastExit = roundabout[roundabout.length - 1];
   return previousExit || lastExit;
 }
 
 function getApexCoords(startPoint, endPoint) {
-  showApexGeometry(startPoint, endPoint);
   const startToEnd = [0, 1].map(x => endPoint[x] - startPoint[x]);
   let perp = normal(startToEnd);
   if (direction === 'L') {
@@ -81,9 +90,11 @@ function getApexCoords(startPoint, endPoint) {
 }
 
 function addPointedReturn() {
+  debugger;
   const startCoords = currentLine.crossingPoint.coords;
   const endCoords = nextLine().crossingPoint.coords;
   const prCoords = getApexCoords(startCoords, endCoords);
+  showApexGeometry(startCoords, endCoords);
   showLink.call(this, prCoords);
 
   this.push({
@@ -153,10 +164,6 @@ function pointedReturnIsRequired() {
 
 function initialDirection() {
   return currentLine.crossingPoint.uncrossedDirection();
-}
-
-function initialTargetNode() {
-  return currentLine.endNode;
 }
 
 function showLink(coords) {

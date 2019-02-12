@@ -24,7 +24,7 @@ body {
 
 #wrapper {
 	height: 90vh;
-	width: 90vh;
+	width: 90vw;
 	position: relative;
 	top: 5vh;
 	margin: 0 auto;

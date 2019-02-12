@@ -9,7 +9,7 @@ export function paint(point, color) {
 
 export function paintLine(coordsA, coordsB) {
   const svgLine = Snap('#surface').line(...coordsA, ...coordsB);
-  return svgLine.attr({ stroke: 'black', strokeWidth: 3, strokeOpacity: 0.5 });
+  return svgLine.attr({ stroke: 'black', strokeWidth: 3, strokeOpacity: 0.9 });
 }
 
 export function paintArrowHead(line, backwards) {

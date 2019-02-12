@@ -6,26 +6,9 @@ let frame;
 let direction;
 let targetNode;
 
-function slowly(callback, context) {
-  return new Promise(function (resolve) {
-    setTimeout(function () {
-      callback.call(context);
-      resolve();
-    }, 1000);
-  });
-}
+const ANIMATION_STEP = 500;
+const PR_LIMIT_THETA = 1.6;
 
-// like a while loop, but for promises
-function slowWhile(condition, action, context) {
-  function iterate() {
-    if (condition()) {
-      return action.call(context).then(iterate);
-    } else {
-      return Promise.resolve();
-    }
-  }
-  return iterate();
-}
 
 function drawStrand(basisFrame) {
   const result = [];
@@ -52,18 +35,40 @@ function init() {
   addElement.call(this);
 }
 
+
+// slowly and slowWhile are solely for demonstration purposes
+function slowly(callback, context) {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      callback.call(context);
+      resolve();
+    }, ANIMATION_STEP);
+  });
+}
+
+// like a while loop for promises - only proceeds to next iteration when promise resolves
+function slowWhile(condition, action, context) {
+  function iterate() {
+    if (condition()) {
+      return action.call(context).then(iterate);
+    } else {
+      return Promise.resolve();
+    }
+  }
+  return iterate();
+}
+
 function addAllElements() {
   slowWhile(strandIsNotComplete, function() {
-    return slowly(function () {
-      proceed();
-      arrow = showArrow();
-      addElement.call(this);
-    }, this);
+    return slowly(takeStep, this);
   }, this)
+  .then(showLastLink.bind(this));
+}
 
-  .then(function () {
-    showLastLink.call(this);
-  }.bind(this));
+function takeStep() {
+  proceed();
+  arrow = showArrow();
+  addElement.call(this);
 }
 
 function proceed() {
@@ -74,7 +79,56 @@ function proceed() {
 
 function addElement() {
   addCrossingPoint.call(this);
+  if (pointedReturnIsRequired()) {
+    addPointedReturn.call(this);
+  }
   logCrossing();
+}
+
+function pointedReturnIsRequired() {
+  const angleDelta = Math.abs(currentBearing() - nextBearing());
+  const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
+  return smallerAngle > PR_LIMIT_THETA;
+}
+
+function currentBearing() {
+  return currentLine.angleOutCP({
+    direction: direction,
+    reverse: goingBackwards(),
+  });
+}
+
+function nextBearing() {
+  return nextLine().angleOutCP({
+    direction: oppositeDirection(),
+    reverse: traverseNextBackwards(),
+  });
+}
+
+function traverseNextBackwards() {
+  return nextLine().endNode.sameNode(targetNode);
+}
+
+
+function addPointedReturn() {
+  const startCoords = currentLine.crossingPoint.coords;
+  const endCoords = nextLine().crossingPoint.coords;
+  const prCoords = getApexCoords(startCoords, endCoords);
+  showLink.call(this, prCoords);
+
+  this.push({
+    x: prCoords[0],
+    y: prCoords[1],
+  });
+}
+
+function getApexCoords(startPoint, endPoint) {
+  const startToEnd = [0, 1].map(x => endPoint[x] - startPoint[x]);
+  let perp = normal(startToEnd);
+  if (direction === 'L') {
+    perp = perp.map(x => -x);
+  }
+  return startPoint.map((coord, i) => coord + startToEnd[i] / 2 + perp[i]);
 }
 
 function nextLine() {
@@ -143,6 +197,10 @@ function showLink(coords) {
   if (this[this.length - 1]) {
     paintLine(coords, [this[this.length - 1].x, this[this.length - 1].y]);
   }
+}
+
+function normal(vector) {
+  return [-vector[1], vector[0]];
 }
 
 function showLastLink() {

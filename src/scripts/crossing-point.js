@@ -5,7 +5,6 @@ export default function CrossingPoint(startX, startY, endX, endY) {
 }
 
 CrossingPoint.prototype = {
-  constructor: CrossingPoint,
   crossed(direction) {
     if (direction === 'L') {
       return this.crossedLeft;

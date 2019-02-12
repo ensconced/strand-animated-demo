@@ -1,4 +1,4 @@
-export default function Node({x, y}) {
+export default function Node({ x, y }) {
   this.x = x;
   this.y = y;
 }

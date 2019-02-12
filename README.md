@@ -10,6 +10,8 @@ This is constructed on the basis of this frame:
 
 As we traverse our way around the frame, we alternate between taking "left turns", and "right turns". An analogy would be that you're driving a car (the blue arrow), and your keep reaching roundabouts (the purple nodes). You alternate between taking the "first exit" or "left turn" and the "last exit" or "right turn". (These are UK roundabouts).
 
+> N.B. In some cases, there will only be two possible exits from a "roundabout", including the line from which you are entering the roundabout. In such cases, a right turn and left turn are equivalent.
+
 At each step, the "crossing point" (i.e. the point at the centre of the blue line) is added to an array representing the growing strand.
 
 ![knot demo](https://imgur.com/a/IsUMbcm)

@@ -1,4 +1,4 @@
-## Strand Construction Demo:
+## Strand Construction Demo
 
 For the purposes of this demonstration, we will focus on this knot:
 
@@ -16,7 +16,7 @@ At each step, the "crossing point" (i.e. the point at the centre of the blue lin
 
 This is a simple example where the knot consists of one strand only.
 
-The demonstration in this repository limits itself to one section of the knot-drawing algorithm, namely the part that produces an array of points through which this strand should pass, based on the frame/graph that is automatically drawn on the screen.
+The demonstration in this repository limits itself to one stage of the knot-drawing algorithm, namely the stage which produces an array of points through which the constructed strand will pass. This array of points is constructed on the basis of a 'frame', which is just a collection of nodes with some of the nodes connected via Lines.
 
 **Not** covered in this repo:
 

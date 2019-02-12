@@ -1,24 +1,17 @@
-import config from './config.js';
 import Line from './line.js';
 
-export default function Frame(options) {
-  const { nodes, adjacencies } = options;
+export default function Frame({ nodes, adjacencies }) {
   this.nodes = nodes;
   this.adjacencyList = adjacencies;
 }
 
-// frames inherit from grids
 Frame.prototype = {
   constructor: Frame,
-  showAllNodes() {
-    this.nodes.forEach(node => node.draw());
-  },
   drawLineBetween(startNode, endNode) {
     this.lines.push(
       new Line({
         startNode,
         endNode,
-        style: config.frame,
       })
     );
   },

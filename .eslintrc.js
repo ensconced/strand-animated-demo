@@ -11,10 +11,7 @@ module.exports = {
     "rules": {
         "no-restricted-globals": ["error", "event"],
         "no-constant-condition": "off",
-        "indent": [
-            "error",
-            2
-        ],
+        "indent": ["error", 2, { "MemberExpression": 0 }],
         "linebreak-style": [
             "error",
             "unix"

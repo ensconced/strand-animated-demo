@@ -1,30 +1,15 @@
-A website that generates celtic-style knots (*icovellavna*) based on user-defined graphs.
+## Strand Construction Demo:
 
-# Demo
+For the purposes of this demonstration, we will focus on this knot:
 
-![knot demo](https://media.giphy.com/media/d2RPhHfiQ0LgfyQ3sz/giphy.gif)
+![knot demo](https://i.imgur.com/v702syg.png)
 
-# To Do
+This is a simple example where the knot consists of one strand only.
 
-### add unit tests
+The demonstration in this repository limits itself to one section of the knot-drawing algorithm, namely the part that produces an array of points through which this strand should pass, based on the frame/graph that is automatically drawn on the screen.
 
-### refactoring
+**Not** covered in this repo:
 
-- improve ensapsulation
-
-### style
-
--  concanenate SVG properly into paths
-
-### performance stuff
-
-- investigate performance - offset calcs are most costly?
-- avoid unneccessary strand-recalculations
-- strand calculations are relatively fast - could start doing them before mouseup
-- fuzzy memoization of offset calculations?
-- web workers?
-
-### extra features
-
-- triangular and circular grids, and freeform (including real-time dragging)
-- user configuration
+- user interaction
+- smoothing of curves between the strand points
+- construction of "pointed returns" - i.e. the fancy pointy corners

@@ -11,7 +11,7 @@ function slowly(callback, context) {
     setTimeout(function () {
       callback.call(context);
       resolve();
-    }, 500);
+    }, 1000);
   });
 }
 

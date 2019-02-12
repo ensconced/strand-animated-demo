@@ -34,5 +34,6 @@ const adjacencies = [
 document.addEventListener('DOMContentLoaded', function () {
   const frame = new Frame({ nodes, adjacencies });
   frame.drawLines();
+  frame.drawNodes();
   drawStrand(frame);
 }, false);

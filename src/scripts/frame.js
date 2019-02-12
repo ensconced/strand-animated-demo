@@ -1,4 +1,5 @@
 import Line from './line.js';
+import { paint } from './debug-tools.js';
 
 export default function Frame({ nodes, adjacencies }) {
   this.nodes = nodes;
@@ -8,12 +9,10 @@ export default function Frame({ nodes, adjacencies }) {
 Frame.prototype = {
   constructor: Frame,
   drawLineBetween(startNode, endNode) {
-    this.lines.push(
-      new Line({
-        startNode,
-        endNode,
-      })
-    );
+    this.lines.push(new Line({
+      startNode,
+      endNode,
+    }));
   },
   drawLines() {
     this.lines = [];
@@ -25,6 +24,9 @@ Frame.prototype = {
         }
       });
     });
+  },
+  drawNodes() {
+    this.nodes.forEach(node => paint(node, 'purple'));
   },
   linesOutFrom(node) {
     return this.lines.filter(line => line.visits(node));

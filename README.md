@@ -14,7 +14,7 @@ As we traverse our way around the frame, we alternate between taking "left turns
 
 At each step, the "crossing point" (i.e. the point at the centre of the blue line) is added to an array representing the growing strand.
 
-![knot demo](https://imgur.com/a/IsUMbcm)
+![knot demo](https://i.imgur.com/a/IsUMbcm)
 
 This is a simple example where the knot consists of one strand only.
 

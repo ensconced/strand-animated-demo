@@ -24,4 +24,6 @@ At each step, the "crossing point" (i.e. the point at the centre of the blue lin
 
 - user interaction
 - smoothing of curves between the strand points
+- offsetting of strands into two parallel lines
+- line-trimming to produce over/under pattern
 - construction of "pointed returns" - i.e. the fancy pointy corners

@@ -2,8 +2,6 @@ import surface from './main.js';
 import Snap from 'snapsvg';
 import { bezString } from './knot-utils.js';
 
-let rainbowIdx = 0;
-
 function paintBezier(bezier, color) {
   const ctrlPoints = bezier.points.map(coords => [coords.x, coords.y]);
   const path = bezString(...ctrlPoints);
@@ -73,11 +71,4 @@ export function paintArrow(line, backwards) {
   const a = Snap(surface).polyline(...pointA, finish.x, finish.y, ...pointB);
   a.attr({ stroke: 'blue', strokeWidth: 2, fill: 'none'});
   return a;
-}
-
-export function rainbowPaint(bezCollection) {
-  const rainbow = ['red', 'blue', 'green', 'orange', 'purple'];
-  bezCollection.forEach((bez) => {
-    paint(bez, rainbow[rainbowIdx++ % rainbow.length]);
-  });
 }

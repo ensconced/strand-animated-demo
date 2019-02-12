@@ -1,5 +1,4 @@
 import { paint, paintLine, paintArrow } from './debug-tools.js';
-import { normal } from './general-utils.js';
 
 const PR_LIMIT_THETA = 1.6;
 let arrow;
@@ -87,6 +86,10 @@ function getApexCoords(startPoint, endPoint) {
     perp = normal.map(coord => -coord);
   }
   return startPoint.map((coord, i) => coord + startToEnd[i] / 2 + perp[i]);
+}
+
+function normal(vector) {
+  return [-vector[1], vector[0]];
 }
 
 function addPointedReturn() {

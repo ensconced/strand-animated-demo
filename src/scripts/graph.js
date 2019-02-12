@@ -1,5 +1,4 @@
 import config from './config.js';
-import Grid from './grid.js';
 import { pixelCoords } from './mouse.js';
 import Line from './line.js';
 
@@ -12,7 +11,7 @@ export default function Graph() {
     style: config.graphLine,
   };
 
-  Grid.call(this, options);
+  this.lines = [];
 
   // draw all horizontal lines
   this.createHorizontalLines = function(options) {
@@ -61,5 +60,3 @@ export default function Graph() {
   this.createVerticalLines(options);
   this.createHorizontalLines(options);
 }
-
-Graph.prototype = Grid.prototype;

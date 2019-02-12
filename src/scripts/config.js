@@ -1,17 +1,5 @@
 export default {
   resolution: 10,
-  nodeSelectionMinProximity: 20,
-  knot: {
-    stroke: 'black',
-    strokeWidth: 5,
-    fill: 'none',
-    borderWidth: 5,
-  },
-  mask: {
-    stroke: 'white',
-    strokeWidth: 5,
-    fill: 'none',
-  },
   graphRows: 10,
   graphCols: 10,
   squareHeight: 70,
@@ -41,15 +29,5 @@ export default {
     strokeWidth: 1,
     fillOpacity: 0.5,
     radius: 3,
-  },
-
-  // necessary to ensure that frame and graph are properly...
-  // aligned even when either one has greater strokeWidth
-  shiftFactor: function(style) {
-    if (style.strokeWidth === this.maxStrokeWidth()) {
-      return 0;
-    } else {
-      return 0.5 * (this.maxStrokeWidth() - this.minStrokeWidth());
-    }
   },
 };

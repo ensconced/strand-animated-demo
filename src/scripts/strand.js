@@ -153,7 +153,7 @@ function leftTurn(roundabout, entryIndex) {
 function rightTurn(roundabout, entryIndex) {
   const previousExit = roundabout[entryIndex - 1];
   const lastExit = roundabout[roundabout.length - 1];
-  // if there is is no lastExit, we must loop around to the end of the array
+  // if there is is no previousExit, we must loop around to the end of the array
   return previousExit || lastExit;
 }
 
@@ -198,7 +198,7 @@ function normal(vector) {
   return [-vector[1], vector[0]];
 }
 
-// showLink, showLastLink & showArrow and for the purposes of this demonstration only
+// showLink, showLastLink & showArrow are for the purposes of this demonstration only
 function showLink(coords) {
   paint({ x: coords[0], y: coords[1] }, 'green');
   if (this[this.length - 1]) {

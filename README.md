@@ -4,7 +4,7 @@
 
 ```
 git clone https://github.com/ensconced/strand-animated-demo
-cd ./knot-demo
+cd ./strand-animated-demo
 npm install
 npm start
 ```

@@ -43,7 +43,6 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
-    "numeric": "^1.2.6",
     "snapsvg": "^0.5.1"
   }
 }

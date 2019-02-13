@@ -1,6 +1,6 @@
 import { paint, paintLine, paintArrowHead } from './debug-tools.js';
 
-const ANIMATION_STEP = 500;
+const ANIMATION_STEP = 2000;
 const PR_LIMIT_THETA = 1.6;
 
 let arrow;
@@ -27,11 +27,11 @@ function init() {
   // targetNode tells us which way along currentLine we are headed
   targetNode = currentLine.endNode;
 
-  // show currentLine as blue arrow
-  arrow = showArrow();
-
   // add first element
   addElement.call(this);
+
+  // show currentLine as blue arrow
+  arrow = showArrow();
 }
 
 
@@ -66,8 +66,8 @@ function addAllElements() {
 
 function takeStep() {
   proceed();
-  arrow = showArrow();
   addElement.call(this);
+  arrow = showArrow();
 }
 
 function proceed() {

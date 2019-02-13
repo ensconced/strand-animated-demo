@@ -34,8 +34,7 @@ Line.prototype = {
     if (reverse) {
       vector = vector.map(coord => -coord);
     }
-    const result = Math.atan2(vector[1], vector[0]);
-    return result;
+    return Math.atan2(vector[1], vector[0]);
   },
   angleOutFrom(node) {
     if (this.startNode.x === node.x && this.startNode.y === node.y) {
@@ -43,15 +42,6 @@ Line.prototype = {
     } else {
       return this.angle({ reverse: true });
     }
-  },
-  angleOutCP({ reverse, direction }) {
-    let vect = this.vector();
-    if (reverse) {
-      vect = vect.map(coord => -coord);
-    }
-    const angle = direction === 'R' ? Math.PI / 4 : -Math.PI / 4;
-    const resultant = this.rotateAboutOrigin(vect, angle);
-    return Math.atan2(resultant[1], resultant[0]);
   },
   visits(node) {
     return !!(this.startNode.sameNode(node) || this.endNode.sameNode(node));

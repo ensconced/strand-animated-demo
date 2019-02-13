@@ -1,14 +1,13 @@
 import { paint, paintLine, paintArrowHead } from './debug-tools.js';
 
+const ANIMATION_STEP = 500;
+const PR_LIMIT_THETA = 1.6;
+
 let arrow;
 let currentLine;
 let frame;
 let direction;
 let targetNode;
-
-const ANIMATION_STEP = 500;
-const PR_LIMIT_THETA = 1.6;
-
 
 function drawStrand(basisFrame) {
   const result = [];
@@ -86,29 +85,29 @@ function addElement() {
 }
 
 function pointedReturnIsRequired() {
-  const angleDelta = Math.abs(currentBearing() - nextBearing());
-  const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
+  let angleDelta = currentBearing() - nextBearing();
+  angleDelta += (direction === 'R' ? Math.PI / 2 : -Math.PI / 2);
+  const absDelta = Math.abs(angleDelta);
+  const smallerAngle = Math.min(absDelta, Math.PI * 2 - absDelta);
   return smallerAngle > PR_LIMIT_THETA;
 }
 
 function currentBearing() {
-  return currentLine.angleOutCP({
-    direction: direction,
+  return currentLine.angle({
     reverse: goingBackwards(),
   });
 }
 
 function nextBearing() {
-  return nextLine().angleOutCP({
-    direction: oppositeDirection(),
+  return nextLine().angle({
     reverse: traverseNextBackwards(),
   });
 }
 
+// looks ahead to the next line and returns boolean indicating whether it will be traversed backwards
 function traverseNextBackwards() {
   return nextLine().endNode.sameNode(targetNode);
 }
-
 
 function addPointedReturn() {
   const startCoords = currentLine.crossingPoint.coords;
@@ -131,7 +130,9 @@ function getApexCoords(startPoint, endPoint) {
   return startPoint.map((coord, i) => coord + startToEnd[i] / 2 + perp[i]);
 }
 
+// decides which line we should proceed to next
 function nextLine() {
+  // get all lines that are connected to the targetNode, as vectors
   const outboundLines = frame.linesOutFrom(targetNode);
   const roundabout = outboundLines.sort(compareAngles);
   const entryIndex = roundabout.indexOf(currentLine);
@@ -145,12 +146,14 @@ function nextLine() {
 function leftTurn(roundabout, entryIndex) {
   const nextExit = roundabout[entryIndex + 1];
   const firstExit = roundabout[0];
+  // if there is is no nextExit, we must loop around to the start of the array
   return nextExit || firstExit;
 }
 
 function rightTurn(roundabout, entryIndex) {
   const previousExit = roundabout[entryIndex - 1];
   const lastExit = roundabout[roundabout.length - 1];
+  // if there is is no lastExit, we must loop around to the end of the array
   return previousExit || lastExit;
 }
 
@@ -192,15 +195,16 @@ function initialDirection() {
   return currentLine.crossingPoint.uncrossedDirection();
 }
 
+function normal(vector) {
+  return [-vector[1], vector[0]];
+}
+
+// showLink, showLastLink & showArrow and for the purposes of this demonstration only
 function showLink(coords) {
   paint({ x: coords[0], y: coords[1] }, 'green');
   if (this[this.length - 1]) {
     paintLine(coords, [this[this.length - 1].x, this[this.length - 1].y]);
   }
-}
-
-function normal(vector) {
-  return [-vector[1], vector[0]];
 }
 
 function showLastLink() {

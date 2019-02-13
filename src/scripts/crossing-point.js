@@ -4,6 +4,9 @@ export default function CrossingPoint(startX, startY, endX, endY) {
   this.coords = [(startX + endX) / 2, (startY + endY) / 2];
 }
 
+// crossing points are the points at the middle of lines
+// an array of crossing points defines the points through which a knot strand will pass
+
 CrossingPoint.prototype = {
   crossed(direction) {
     if (direction === 'L') {

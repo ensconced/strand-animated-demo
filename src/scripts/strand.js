@@ -1,6 +1,6 @@
 import { paint, paintLine, paintArrowHead } from './debug-tools.js';
 
-const ANIMATION_STEP = 2000;
+const ANIMATION_STEP = 500;
 const PR_LIMIT_THETA = 1.6;
 
 let arrow;
@@ -159,7 +159,6 @@ function rightTurn(roundabout, entryIndex) {
 
 function addCrossingPoint() {
   const strandElement = {
-    direction,
     x: currentLine.crossingPoint.coords[0],
     y: currentLine.crossingPoint.coords[1],
   };

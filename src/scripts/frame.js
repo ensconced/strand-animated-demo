@@ -18,7 +18,7 @@ Frame.prototype = {
     this.lines = [];
     this.nodes.forEach((startNode, i) => {
       this.adjacencyList[i].forEach(j => {
-        // avoid drawing each line twice
+        // condition avoids drawing each line twice
         if (i < j) {
           this.drawLineBetween(startNode, this.nodes[j]);
         }

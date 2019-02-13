@@ -3,7 +3,7 @@
 #### To check it out:
 
 ```
-git clone https://github.com/ensconced/knot-demo
+git clone https://github.com/ensconced/strand-animated-demo
 cd ./knot-demo
 npm install
 npm start
